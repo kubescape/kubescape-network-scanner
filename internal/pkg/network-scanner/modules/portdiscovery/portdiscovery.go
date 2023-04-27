@@ -19,6 +19,13 @@ type ScanConfig struct {
 	UdpOnly bool
 }
 
+type ScanTarget struct {
+	Hostname string
+	IPStart  net.IP
+}
+
+// Struct defining the result of the network scanner
+
 func parseArgs() (*ScanConfig, error) {
 	var config ScanConfig
 
@@ -43,24 +50,24 @@ func parseArgs() (*ScanConfig, error) {
 				fmt.Printf("IPv6 address not supported: %s\n", ip.String())
 				continue
 			}
-			target := TargetDescription{IP: ip}
+			target := TargetDescription{IPStart: ip}
 			config.Targets = append(config.Targets, target)
 		}
 	} else {
-		target := TargetDescription{Host: targetStr}
-		if ip := net.ParseIP(target.Host); ip != nil {
+		target := TargetDescription{Hostname: targetStr}
+		if ip := net.ParseIP(target.Hostname); ip != nil {
 			if ip.To4() == nil {
 				return nil, fmt.Errorf("IPv6 address not supported.")
 			}
-			target.IP = ip
+			target.IPStart = ip
 		} else {
 			// Resolve hostname
-			addrs, err := net.LookupHost(target.Host)
+			addrs, err := net.LookupHost(target.Hostname)
 			if err != nil {
-				return nil, fmt.Errorf("Failed to resolve hostname: %s", target.Host)
+				return nil, fmt.Errorf("Failed to resolve hostname: %s", target.Hostname)
 			}
-			target.IP = net.ParseIP(addrs[0])
-			if target.IP.To4() == nil {
+			target.IPStart = net.ParseIP(addrs[0])
+			if target.IPStart.To4() == nil {
 				return nil, fmt.Errorf("IPv6 address not supported.")
 			}
 		}
@@ -84,11 +91,11 @@ func parseArgs() (*ScanConfig, error) {
 
 func scanTarget(target TargetDescription, proto string, ports []int, timeout time.Duration, results chan<- ScanResult, wg *sync.WaitGroup) {
 	defer wg.Done()
-	portsOpen := scanIP(target.IP.String(), proto, ports, timeout)
+	portsOpen := scanIP(target.IPStart.String(), proto, ports, timeout)
 	if len(portsOpen.TCPPorts) > 0 || len(portsOpen.UDPPorts) > 0 {
 		result := ScanResult{
-			Host:     target.Host,
-			IP:       target.IP,
+			host:     target.Hostname,
+			IP:       target.IPStart,
 			TCPPorts: portsOpen.TCPPorts,
 			UDPPorts: portsOpen.UDPPorts,
 		}
@@ -106,33 +113,33 @@ func scanTargets(targets []ScanTarget, tcpOnly bool, udpOnly bool, ports []int, 
 			defer wg.Done()
 			switch {
 			case !tcpOnly && !udpOnly:
-				tcpPortsOpen := scanIP(target.IP.String(), "tcp", ports, timeout)
-				udpPortsOpen := scanIP(target.IP.String(), "udp", ports, timeout)
+				tcpPortsOpen := scanIP(target.IPStart.String(), "tcp", ports, timeout)
+				udpPortsOpen := scanIP(target.IPStart.String(), "udp", ports, timeout)
 				if len(tcpPortsOpen.TCPPorts) > 0 || len(udpPortsOpen.UDPPorts) > 0 {
 					result := ScanResult{
-						Host:     target.Host,
-						IP:       target.IP,
+						host:     target.Hostname,
+						IP:       target.IPStart,
 						TCPPorts: tcpPortsOpen.TCPPorts,
 						UDPPorts: udpPortsOpen.UDPPorts,
 					}
 					results <- result
 				}
 			case tcpOnly:
-				tcpPortsOpen := scanIP(target.IP.String(), "tcp", ports, timeout)
+				tcpPortsOpen := scanIP(target.IPStart.String(), "tcp", ports, timeout)
 				if len(tcpPortsOpen.TCPPorts) > 0 {
 					result := ScanResult{
-						Host:     target.Host,
-						IP:       target.IP,
+						host:     target.Hostname,
+						IP:       target.IPStart,
 						TCPPorts: tcpPortsOpen.TCPPorts,
 					}
 					results <- result
 				}
 			case udpOnly:
-				udpPortsOpen := scanIP(target.IP.String(), "udp", ports, timeout)
+				udpPortsOpen := scanIP(target.IPStart.String(), "udp", ports, timeout)
 				if len(udpPortsOpen.UDPPorts) > 0 {
 					result := ScanResult{
-						Host:     target.Host,
-						IP:       target.IP,
+						host:     target.Hostname,
+						IP:       target.IPStart,
 						UDPPorts: udpPortsOpen.UDPPorts,
 					}
 					results <- result
