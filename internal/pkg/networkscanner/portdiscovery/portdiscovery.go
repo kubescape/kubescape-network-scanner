@@ -1,4 +1,4 @@
-package networkscanner
+package portdiscovery
 
 import (
 	"flag"
@@ -9,10 +9,12 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner"
 )
 
 type ScanConfig struct {
-	Targets []TargetDescription
+	Targets []networkscanner.TargetDescription
 	Ports   []int
 	Timeout time.Duration
 	TcpOnly bool
@@ -50,11 +52,11 @@ func parseArgs() (*ScanConfig, error) {
 				fmt.Printf("IPv6 address not supported: %s\n", ip.String())
 				continue
 			}
-			target := TargetDescription{IPStart: ip}
+			target := networkscanner.TargetDescription{IPStart: ip}
 			config.Targets = append(config.Targets, target)
 		}
 	} else {
-		target := TargetDescription{Hostname: targetStr}
+		target := networkscanner.TargetDescription{Hostname: targetStr}
 		if ip := net.ParseIP(target.Hostname); ip != nil {
 			if ip.To4() == nil {
 				return nil, fmt.Errorf("IPv6 address not supported.")
@@ -89,11 +91,11 @@ func parseArgs() (*ScanConfig, error) {
 	return &config, nil
 }
 
-func scanTarget(target TargetDescription, proto string, ports []int, timeout time.Duration, results chan<- ScanResult, wg *sync.WaitGroup) {
+func scanTarget(target networkscanner.TargetDescription, proto string, ports []int, timeout time.Duration, results chan<- networkscanner.ScanResult, wg *sync.WaitGroup) {
 	defer wg.Done()
 	portsOpen := scanIP(target.IPStart.String(), proto, ports, timeout)
 	if len(portsOpen.TCPPorts) > 0 || len(portsOpen.UDPPorts) > 0 {
-		result := ScanResult{
+		result := networkscanner.ScanResult{
 			host:     target.Hostname,
 			IP:       target.IPStart,
 			TCPPorts: portsOpen.TCPPorts,
@@ -103,9 +105,9 @@ func scanTarget(target TargetDescription, proto string, ports []int, timeout tim
 	}
 }
 
-func scanTargets(targets []ScanTarget, tcpOnly bool, udpOnly bool, ports []int, timeout time.Duration) []ScanResult {
+func scanTargets(targets []ScanTarget, tcpOnly bool, udpOnly bool, ports []int, timeout time.Duration) []networkscanner.ScanResult {
 	var wg sync.WaitGroup
-	results := make(chan ScanResult, len(targets))
+	results := make(chan networkscanner.ScanResult, len(targets))
 
 	for _, target := range targets {
 		wg.Add(1)
@@ -116,7 +118,7 @@ func scanTargets(targets []ScanTarget, tcpOnly bool, udpOnly bool, ports []int, 
 				tcpPortsOpen := scanIP(target.IPStart.String(), "tcp", ports, timeout)
 				udpPortsOpen := scanIP(target.IPStart.String(), "udp", ports, timeout)
 				if len(tcpPortsOpen.TCPPorts) > 0 || len(udpPortsOpen.UDPPorts) > 0 {
-					result := ScanResult{
+					result := networkscanner.ScanResult{
 						host:     target.Hostname,
 						IP:       target.IPStart,
 						TCPPorts: tcpPortsOpen.TCPPorts,
@@ -127,7 +129,7 @@ func scanTargets(targets []ScanTarget, tcpOnly bool, udpOnly bool, ports []int, 
 			case tcpOnly:
 				tcpPortsOpen := scanIP(target.IPStart.String(), "tcp", ports, timeout)
 				if len(tcpPortsOpen.TCPPorts) > 0 {
-					result := ScanResult{
+					result := networkscanner.ScanResult{
 						host:     target.Hostname,
 						IP:       target.IPStart,
 						TCPPorts: tcpPortsOpen.TCPPorts,
@@ -137,7 +139,7 @@ func scanTargets(targets []ScanTarget, tcpOnly bool, udpOnly bool, ports []int, 
 			case udpOnly:
 				udpPortsOpen := scanIP(target.IPStart.String(), "udp", ports, timeout)
 				if len(udpPortsOpen.UDPPorts) > 0 {
-					result := ScanResult{
+					result := networkscanner.ScanResult{
 						host:     target.Hostname,
 						IP:       target.IPStart,
 						UDPPorts: udpPortsOpen.UDPPorts,
@@ -153,7 +155,7 @@ func scanTargets(targets []ScanTarget, tcpOnly bool, udpOnly bool, ports []int, 
 		close(results)
 	}()
 
-	var scanResults []ScanResult
+	var scanResults []networkscanner.ScanResult
 	for result := range results {
 		scanResults = append(scanResults, result)
 	}
@@ -180,7 +182,7 @@ const numGoroutines = 8
  If no ports are specified, it scans all ports. Returns a ScanResult
 struct containing the IP address and open TCP and UDP ports. */
 
-func scanIP(ip string, proto string, ports []int, timeout time.Duration) ScanResult {
+func scanIP(ip string, proto string, ports []int, timeout time.Duration) networkscanner.ScanResult {
 	// Create a channel to collect open ports and a done channel for synchronization
 	openPorts := make(chan int)
 	done := make(chan struct{})
@@ -191,7 +193,7 @@ func scanIP(ip string, proto string, ports []int, timeout time.Duration) ScanRes
 	if ipAddr == nil {
 		// Invalid IP address
 		fmt.Printf("%s is not a valid IP address\n", ip)
-		return ScanResult{}
+		return networkscanner.ScanResult{}
 	}
 
 	// Start a fixed number of goroutines for scanning ports
@@ -245,7 +247,7 @@ func scanIP(ip string, proto string, ports []int, timeout time.Duration) ScanRes
 	}
 
 	// Create and return a ScanResult struct
-	result := ScanResult{
+	result := networkscanner.ScanResult{
 		IP:       ipAddr,
 		TCPPorts: openTCPPorts,
 		UDPPorts: openUDPPorts,

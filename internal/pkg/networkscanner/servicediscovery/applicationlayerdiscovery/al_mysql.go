@@ -1,4 +1,4 @@
-package networkscanner
+package servicediscovery
 
 import (
 	"bytes"

@@ -1,4 +1,4 @@
-package networkscanner
+package servicediscovery
 
 type TransportProtocol string
 type PresentationLayerProtocol string
