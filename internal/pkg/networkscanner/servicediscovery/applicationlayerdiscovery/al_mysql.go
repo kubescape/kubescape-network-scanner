@@ -1,8 +1,10 @@
-package servicediscovery
+package applicationlayerdiscovery
 
 import (
 	"bytes"
 	"encoding/binary"
+
+	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
 )
 
 type MysqlDiscoveryResult struct {
@@ -32,7 +34,7 @@ func (d *MysqlDiscovery) Protocol() string {
 	return "my-sql"
 }
 
-func (d *MysqlDiscovery) Discover(sessionHandler iSessionHandler, presentationLayerDiscoveryResult iPresentationDiscoveryResult) (iApplicationDiscoveryResult, error) {
+func (d *MysqlDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler, presentationLayerDiscoveryResult servicediscovery.IPresentationDiscoveryResult) (servicediscovery.IApplicationDiscoveryResult, error) {
 	err := sessionHandler.Connect()
 	if err != nil {
 		return nil, err
@@ -70,7 +72,7 @@ type InitialHandshakePacket struct {
 	header          *PacketHeader
 }
 
-func (r *InitialHandshakePacket) Decode(sessionHandler iSessionHandler) error {
+func (r *InitialHandshakePacket) Decode(sessionHandler servicediscovery.ISessionHandler) error {
 	data := make([]byte, 1024)
 	_, err := sessionHandler.Read(data)
 	if err != nil {

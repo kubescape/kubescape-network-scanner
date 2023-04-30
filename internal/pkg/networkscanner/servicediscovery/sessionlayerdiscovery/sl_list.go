@@ -1,13 +1,17 @@
-package networkscanner
+package sessionlayerdiscovery
+
+import (
+	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
+)
 
 type SessionLayerDiscoveryListItem struct {
-	Discovery  SessionLayerProtocolDiscovery
+	Discovery  servicediscovery.SessionLayerProtocolDiscovery
 	Reqirement string
 }
 
 var SessionDiscoveryList = []SessionLayerDiscoveryListItem{
 	{
 		Discovery:  &TlsSessionDiscovery{},
-		Reqirement: string(TCP),
+		Reqirement: string(servicediscovery.TCP),
 	},
 }

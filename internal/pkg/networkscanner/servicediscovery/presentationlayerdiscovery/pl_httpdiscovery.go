@@ -1,16 +1,18 @@
-package networkscanner
+package presentationlayerdiscovery
 
 import (
 	"fmt"
 	"regexp"
+
+	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
 )
 
 // For HTTP example implementation of the PresentationLayerDiscovery interface
 type HttpDiscovery struct {
 }
 
-func (d *HttpDiscovery) Protocol() PresentationLayerProtocol {
-	return HTTP
+func (d *HttpDiscovery) Protocol() servicediscovery.PresentationLayerProtocol {
+	return servicediscovery.HTTP
 }
 
 type SessionHandler struct {
@@ -40,11 +42,11 @@ func (hh *HttpDiscoveryResult) GetIsDetected() bool {
 }
 
 // Protocol implements iPresentationDiscoveryResult
-func (*HttpDiscoveryResult) Protocol() PresentationLayerProtocol {
-	return HTTP
+func (*HttpDiscoveryResult) Protocol() servicediscovery.PresentationLayerProtocol {
+	return servicediscovery.HTTP
 }
 
-func (d *HttpDiscovery) Discover(sessionHandler iSessionHandler) (iPresentationDiscoveryResult, error) {
+func (d *HttpDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler) (servicediscovery.IPresentationDiscoveryResult, error) {
 	// Connect to sessionHandler
 	err := sessionHandler.Connect()
 	if err != nil {

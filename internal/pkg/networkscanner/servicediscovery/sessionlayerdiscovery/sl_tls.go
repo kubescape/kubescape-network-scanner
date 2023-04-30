@@ -1,8 +1,10 @@
-package networkscanner
+package sessionlayerdiscovery
 
 import (
 	"crypto/tls"
 	"fmt"
+
+	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
 )
 
 type TlsSessionDiscovery struct {
@@ -20,11 +22,11 @@ type TlsSessionHandler struct {
 	conn *tls.Conn
 }
 
-func (d *TlsSessionDiscovery) Protocol() TransportProtocol {
-	return TCP
+func (d *TlsSessionDiscovery) Protocol() servicediscovery.TransportProtocol {
+	return servicediscovery.TCP
 }
 
-func (d *TlsSessionDiscovery) SessionLayerDiscover(hostAddr string, port int) (iSessionLayerDiscoveryResult, error) {
+func (d *TlsSessionDiscovery) SessionLayerDiscover(hostAddr string, port int) (servicediscovery.ISessionLayerDiscoveryResult, error) {
 	// Create a TLS config with InsecureSkipVerify set
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: true,
@@ -39,8 +41,8 @@ func (d *TlsSessionDiscovery) SessionLayerDiscover(hostAddr string, port int) (i
 	return &TlsSessionDiscoveryResult{isTls: true, host: hostAddr, port: port}, nil
 }
 
-func (d *TlsSessionDiscoveryResult) Protocol() SessionLayerProtocol {
-	return TLS
+func (d *TlsSessionDiscoveryResult) Protocol() servicediscovery.SessionLayerProtocol {
+	return servicediscovery.TLS
 }
 
 func (d *TlsSessionDiscoveryResult) GetIsDetected() bool {
@@ -51,7 +53,7 @@ func (d *TlsSessionDiscoveryResult) GetProperties() map[string]interface{} {
 	return nil
 }
 
-func (d *TlsSessionDiscoveryResult) GetSessionHandler() (iSessionHandler, error) {
+func (d *TlsSessionDiscoveryResult) GetSessionHandler() (servicediscovery.ISessionHandler, error) {
 	return &TlsSessionHandler{host: d.host, port: d.port}, nil
 }
 

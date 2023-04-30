@@ -17,7 +17,7 @@ const (
 // Session Layer Protocols
 ///////////////////////////////////////////////////////////////////////////////
 
-type iSessionHandler interface {
+type ISessionHandler interface {
 	Connect() error
 	Destory() error
 	Write([]byte) (int, error)
@@ -26,23 +26,23 @@ type iSessionHandler interface {
 	GetPort() int
 }
 
-type iSessionLayerDiscoveryResult interface {
+type ISessionLayerDiscoveryResult interface {
 	Protocol() SessionLayerProtocol
 	GetIsDetected() bool
 	GetProperties() map[string]interface{}
-	GetSessionHandler() (iSessionHandler, error)
+	GetSessionHandler() (ISessionHandler, error)
 }
 
 type SessionLayerProtocolDiscovery interface {
 	Protocol() TransportProtocol
-	SessionLayerDiscover(hostAddr string, port int) (iSessionLayerDiscoveryResult, error)
+	SessionLayerDiscover(hostAddr string, port int) (ISessionLayerDiscoveryResult, error)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Presentation Layer Protocols
 ///////////////////////////////////////////////////////////////////////////////
 
-type iPresentationDiscoveryResult interface {
+type IPresentationDiscoveryResult interface {
 	Protocol() PresentationLayerProtocol
 	GetIsDetected() bool
 	GetProperties() map[string]interface{}
@@ -50,14 +50,14 @@ type iPresentationDiscoveryResult interface {
 
 type PresentationLayerDiscovery interface {
 	Protocol() PresentationLayerProtocol
-	Discover(sessionHandler iSessionHandler) (iPresentationDiscoveryResult, error)
+	Discover(sessionHandler ISessionHandler) (IPresentationDiscoveryResult, error)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Application Layer Protocols
 ///////////////////////////////////////////////////////////////////////////////
 
-type iApplicationDiscoveryResult interface {
+type IApplicationDiscoveryResult interface {
 	Protocol() string
 	GetIsDetected() bool
 	GetProperties() map[string]interface{}
@@ -66,5 +66,5 @@ type iApplicationDiscoveryResult interface {
 
 type ApplicationLayerDiscovery interface {
 	Protocol() string
-	Discover(sessionHandler iSessionHandler, presenationLayerDiscoveryResult iPresentationDiscoveryResult) (iApplicationDiscoveryResult, error)
+	Discover(sessionHandler ISessionHandler, presenationLayerDiscoveryResult IPresentationDiscoveryResult) (IApplicationDiscoveryResult, error)
 }

@@ -1,7 +1,7 @@
 package applicationlayerdiscovery
 
 import (
-	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery/"
+	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
 )
 
 type ApplicationDiscoveryListItem struct {
@@ -19,11 +19,7 @@ var ApplicationDiscoveryList = []ApplicationDiscoveryListItem{
 	//	Reqirement: string(HTTP),
 	//},
 	{
-		Discovery:  &servicediscovery.MysqlDiscovery{},
-		Reqirement: string(servicediscovery.TCP),
-	},
-	{
-		Discovery:  &servicediscovery.RedisDiscovery{},
+		Discovery:  &MysqlDiscovery{},
 		Reqirement: string(servicediscovery.TCP),
 	},
 }

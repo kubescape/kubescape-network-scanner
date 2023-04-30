@@ -36,7 +36,7 @@ type TargetDescription struct {
 
 // Struct defining the result of the network scanner
 type ScanResult struct {
-	host           string
+	Host           string
 	IP             net.IP
 	TCPPorts       []int
 	UDPPorts       []int

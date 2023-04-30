@@ -1,13 +1,17 @@
-package networkscanner
+package presentationlayerdiscovery
+
+import (
+	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
+)
 
 type PresentationLayerDiscoveryListItem struct {
-	Discovery  PresentationLayerDiscovery
+	Discovery  servicediscovery.PresentationLayerDiscovery
 	Reqirement string
 }
 
 var PresentationDiscoveryList = []PresentationLayerDiscoveryListItem{
 	{
 		Discovery:  &HttpDiscovery{},
-		Reqirement: string(TCP),
+		Reqirement: string(servicediscovery.TCP),
 	},
 }

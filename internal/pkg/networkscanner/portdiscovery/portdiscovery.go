@@ -96,7 +96,7 @@ func scanTarget(target networkscanner.TargetDescription, proto string, ports []i
 	portsOpen := scanIP(target.IPStart.String(), proto, ports, timeout)
 	if len(portsOpen.TCPPorts) > 0 || len(portsOpen.UDPPorts) > 0 {
 		result := networkscanner.ScanResult{
-			host:     target.Hostname,
+			Host:     target.Hostname,
 			IP:       target.IPStart,
 			TCPPorts: portsOpen.TCPPorts,
 			UDPPorts: portsOpen.UDPPorts,
@@ -119,7 +119,7 @@ func scanTargets(targets []ScanTarget, tcpOnly bool, udpOnly bool, ports []int, 
 				udpPortsOpen := scanIP(target.IPStart.String(), "udp", ports, timeout)
 				if len(tcpPortsOpen.TCPPorts) > 0 || len(udpPortsOpen.UDPPorts) > 0 {
 					result := networkscanner.ScanResult{
-						host:     target.Hostname,
+						Host:     target.Hostname,
 						IP:       target.IPStart,
 						TCPPorts: tcpPortsOpen.TCPPorts,
 						UDPPorts: udpPortsOpen.UDPPorts,
@@ -130,7 +130,7 @@ func scanTargets(targets []ScanTarget, tcpOnly bool, udpOnly bool, ports []int, 
 				tcpPortsOpen := scanIP(target.IPStart.String(), "tcp", ports, timeout)
 				if len(tcpPortsOpen.TCPPorts) > 0 {
 					result := networkscanner.ScanResult{
-						host:     target.Hostname,
+						Host:     target.Hostname,
 						IP:       target.IPStart,
 						TCPPorts: tcpPortsOpen.TCPPorts,
 					}
@@ -140,7 +140,7 @@ func scanTargets(targets []ScanTarget, tcpOnly bool, udpOnly bool, ports []int, 
 				udpPortsOpen := scanIP(target.IPStart.String(), "udp", ports, timeout)
 				if len(udpPortsOpen.UDPPorts) > 0 {
 					result := networkscanner.ScanResult{
-						host:     target.Hostname,
+						Host:     target.Hostname,
 						IP:       target.IPStart,
 						UDPPorts: udpPortsOpen.UDPPorts,
 					}
