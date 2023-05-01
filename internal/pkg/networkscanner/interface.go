@@ -36,8 +36,10 @@ type TargetDescription struct {
 
 // Struct defining the result of the network scanner
 type ScanResult struct {
+	Host           string
 	IP             net.IP
-	Port           int
+	TCPPorts       []int
+	UDPPorts       []int
 	Service        string // Maybe we need to break this down into more fields (HTTP, Kubelete etc.)
 	Authenticated  string
 	SecureProtocol bool // TLS/SSL
