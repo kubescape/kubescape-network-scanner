@@ -1,12 +1,8 @@
 package portdiscovery
 
 import (
-	"flag"
 	"fmt"
 	"net"
-	"os"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -14,7 +10,7 @@ import (
 )
 
 type ScanConfig struct {
-	Targets []networkscanner.TargetDescription
+	Targets []ScanTarget
 	Ports   []int
 	Timeout time.Duration
 	TcpOnly bool
@@ -27,71 +23,7 @@ type ScanTarget struct {
 }
 
 // Struct defining the result of the network scanner
-
-func parseArgs() (*ScanConfig, error) {
-	var config ScanConfig
-
-	flag.BoolVar(&config.TcpOnly, "tcp", false, "Scan only TCP ports")
-	flag.BoolVar(&config.UdpOnly, "udp", false, "Scan only UDP ports")
-	flag.Parse()
-
-	if flag.NArg() < 1 {
-		return nil, fmt.Errorf("Usage: %s [--tcp|--udp] <host or ip_address or ip_range> [ports...]", os.Args[0])
-	}
-
-	targetStr := flag.Arg(0)
-	if strings.Contains(targetStr, "-") { // check if target is a range of IP addresses
-		ipRange := strings.Split(targetStr, "-")
-		startIP := net.ParseIP(ipRange[0])
-		endIP := net.ParseIP(ipRange[1])
-		if startIP == nil || endIP == nil {
-			return nil, fmt.Errorf("Invalid IP address range.")
-		}
-		for ip := startIP; ip.String() <= endIP.String(); incIP(ip) {
-			if ip.To4() == nil {
-				fmt.Printf("IPv6 address not supported: %s\n", ip.String())
-				continue
-			}
-			target := networkscanner.TargetDescription{IPStart: ip}
-			config.Targets = append(config.Targets, target)
-		}
-	} else {
-		target := networkscanner.TargetDescription{Hostname: targetStr}
-		if ip := net.ParseIP(target.Hostname); ip != nil {
-			if ip.To4() == nil {
-				return nil, fmt.Errorf("IPv6 address not supported.")
-			}
-			target.IPStart = ip
-		} else {
-			// Resolve hostname
-			addrs, err := net.LookupHost(target.Hostname)
-			if err != nil {
-				return nil, fmt.Errorf("Failed to resolve hostname: %s", target.Hostname)
-			}
-			target.IPStart = net.ParseIP(addrs[0])
-			if target.IPStart.To4() == nil {
-				return nil, fmt.Errorf("IPv6 address not supported.")
-			}
-		}
-		config.Targets = append(config.Targets, target)
-	}
-
-	if flag.NArg() > 1 {
-		for _, portStr := range flag.Args()[1:] {
-			port, err := strconv.Atoi(portStr)
-			if err != nil {
-				return nil, fmt.Errorf("Invalid port number: %s", portStr)
-			}
-			config.Ports = append(config.Ports, port)
-		}
-	}
-
-	config.Timeout = 100 * time.Millisecond
-
-	return &config, nil
-}
-
-func scanTarget(target networkscanner.TargetDescription, proto string, ports []int, timeout time.Duration, results chan<- networkscanner.ScanResult, wg *sync.WaitGroup) {
+func SccanTarget(target ScanTarget, proto string, ports []int, timeout time.Duration, results chan<- networkscanner.ScanResult, wg *sync.WaitGroup) {
 	defer wg.Done()
 	portsOpen := scanIP(target.IPStart.String(), proto, ports, timeout)
 	if len(portsOpen.TCPPorts) > 0 || len(portsOpen.UDPPorts) > 0 {
@@ -105,7 +37,7 @@ func scanTarget(target networkscanner.TargetDescription, proto string, ports []i
 	}
 }
 
-func scanTargets(targets []ScanTarget, tcpOnly bool, udpOnly bool, ports []int, timeout time.Duration) []networkscanner.ScanResult {
+func ScanTargets(targets []ScanTarget, tcpOnly bool, udpOnly bool, ports []int, timeout time.Duration) []networkscanner.ScanResult {
 	var wg sync.WaitGroup
 	results := make(chan networkscanner.ScanResult, len(targets))
 
@@ -164,7 +96,7 @@ func scanTargets(targets []ScanTarget, tcpOnly bool, udpOnly bool, ports []int, 
 }
 
 // Increment IP address
-func incIP(ip net.IP) {
+func IncIP(ip net.IP) {
 	for j := len(ip) - 1; j >= 0; j-- {
 		if ip[j] < 255 {
 			ip[j]++
@@ -253,6 +185,22 @@ func scanIP(ip string, proto string, ports []int, timeout time.Duration) network
 		UDPPorts: openUDPPorts,
 	}
 	return result
+}
+
+func PrintResults(results []networkscanner.ScanResult) {
+	for _, result := range results {
+		if len(result.TCPPorts) > 0 || len(result.UDPPorts) > 0 {
+			fmt.Printf("%s (%s) has the following ports open:\n", result.Host, result.IP.String())
+			if len(result.TCPPorts) > 0 {
+				fmt.Printf("TCP: %v\n", result.TCPPorts)
+			}
+			if len(result.UDPPorts) > 0 {
+				fmt.Printf("UDP: %v\n", result.UDPPorts)
+			}
+		} else {
+			fmt.Printf("%s (%s) has an empty list of open ports.\n", result.Host, result.IP.String())
+		}
+	}
 }
 
 // isOpen checks if the specified TCP or UDP port is open on the specified IP address.
