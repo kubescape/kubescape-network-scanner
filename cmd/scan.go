@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/portdiscovery"
+	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
 	"github.com/spf13/cobra"
 )
 
@@ -56,8 +57,17 @@ func scan(cmd *cobra.Command, args []string) error {
 	// Scan targets
 	scanResults := portdiscovery.ScanTargets(config.Targets, config.TcpOnly, config.UdpOnly, config.Ports, config.Timeout)
 
+	// Service discovery for each port discovered
+	var serviceScanResults []servicediscovery.ScanResult
+	for _, scanResult := range scanResults {
+		port := scanResult.Port
+		serviceScanResult := servicediscovery.ScanTargets(config.Targets, []int{port})
+		serviceScanResults = append(serviceScanResults, serviceScanResult...)
+	}
+
 	// Print scan results
 	portdiscovery.PrintResults(scanResults)
+	servicediscovery.PrintResults(serviceScanResults)
 
 	return nil
 }
