@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/portdiscovery"
-	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
 	"github.com/spf13/cobra"
 )
 
@@ -57,17 +56,25 @@ func scan(cmd *cobra.Command, args []string) error {
 	// Scan targets
 	scanResults := portdiscovery.ScanTargets(config.Targets, config.TcpOnly, config.UdpOnly, config.Ports, config.Timeout)
 
-	// Service discovery for each port discovered
-	var serviceScanResults []servicediscovery.ScanResult
-	for _, scanResult := range scanResults {
-		port := scanResult.Port
-		serviceScanResult := servicediscovery.ScanTargets(config.Targets, []int{port})
-		serviceScanResults = append(serviceScanResults, serviceScanResult...)
-	}
-
 	// Print scan results
 	portdiscovery.PrintResults(scanResults)
-	servicediscovery.PrintResults(serviceScanResults)
+	// Iterate through each scan result and perform service discovery
+	for _, target := range scanResults {
+		// Perform service discovery for open TCP ports
+		for _, port := range target.TCPPorts {
+			discoveryResult, err := ScanTargets(target.Host, port)
+			if err != nil {
+				fmt.Printf("Error while discovering services on %s:%d: %s\n", target.Host, port, err)
+				continue
+			}
+
+			// Print discovered services
+			fmt.Printf("Services discovered on %s:%d:\n", target.Host, port)
+			fmt.Printf("Session Layer: %s\n", discoveryResult.SessionLayer)
+			fmt.Printf("Presentation Layer: %s\n", discoveryResult.PresentationLayer)
+			fmt.Printf("Application Layer: %s\n", discoveryResult.ApplicationLayer)
+		}
+	}
 
 	return nil
 }
