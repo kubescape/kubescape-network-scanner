@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
+	"os"
 	"strconv"
 	"strings"
 
@@ -22,6 +24,7 @@ var (
 	tcpFlag      bool
 	udpFlag      bool
 	serviceFlag  []string
+	jsonflag     bool
 
 	// Scan command
 	ScanCmd = &cobra.Command{
@@ -42,12 +45,14 @@ func init() {
 	ScanCmd.Flags().BoolVar(&tcpFlag, "tcp", false, "Scan only TCP ports")
 	ScanCmd.Flags().BoolVar(&udpFlag, "udp", false, "Scan only UDP ports")
 	ScanCmd.Flags().StringSliceVar(&serviceFlag, "service", []string{}, "Service type(s) to scan (e.g. http, ssh)")
+	ScanCmd.Flags().BoolVar(&jsonflag, "json", false, "Output results in JSON format")
 
 	// Add Scan command to root command
 	rootCmd.AddCommand(ScanCmd)
 }
 
 func scan(cmd *cobra.Command, args []string) error {
+	discoveryResults := []map[string]interface{}{}
 	config, err := parseArgs(args)
 	if err != nil {
 		return err
@@ -73,6 +78,63 @@ func scan(cmd *cobra.Command, args []string) error {
 			fmt.Printf("Session Layer: %s\n", discoveryResult.SessionLayer)
 			fmt.Printf("Presentation Layer: %s\n", discoveryResult.PresentationLayer)
 			fmt.Printf("Application Layer: %s\n", discoveryResult.ApplicationLayer)
+
+			// Store discovery results in a map
+			resultMap := map[string]interface{}{
+				"host":              target.Host,
+				"port":              port,
+				"type":              "tcp",
+				"sessionlayer":      discoveryResult.SessionLayer,
+				"presentationlayer": discoveryResult.PresentationLayer,
+				"applicationlayer":  discoveryResult.ApplicationLayer,
+				"service":           discoveryResult.ApplicationLayer,
+			}
+
+			// Append results to discoveryResults slice
+			discoveryResults = append(discoveryResults, resultMap)
+		}
+		// Perform service discovery for open UDP ports
+		for _, port := range target.UDPPorts {
+			discoveryResult, err := ScanTargets(target.Host, port)
+			if err != nil {
+				fmt.Printf("Error while discovering services on %s:%d: %s\n", target.Host, port, err)
+				continue
+			}
+
+			// Print discovered services
+			fmt.Printf("Services discovered on %s:%d:\n", target.Host, port)
+			fmt.Printf("Session Layer: %s\n", discoveryResult.SessionLayer)
+			fmt.Printf("Presentation Layer: %s\n", discoveryResult.PresentationLayer)
+			fmt.Printf("Application Layer: %s\n", discoveryResult.ApplicationLayer)
+
+			// Store discovery results in a map
+			resultMap := map[string]interface{}{
+				"host":              target.Host,
+				"port":              port,
+				"type":              "udp",
+				"sessionlayer":      discoveryResult.SessionLayer,
+				"presentationlayer": discoveryResult.PresentationLayer,
+				"applicationlayer":  discoveryResult.ApplicationLayer,
+				"service":           discoveryResult.ApplicationLayer,
+			}
+
+			// Append results to discoveryResults slice
+			discoveryResults = append(discoveryResults, resultMap)
+		}
+	}
+	if jsonflag {
+		// Create a file for writing
+		jsonFile, err := os.Create("kubescannerresult.json")
+		if err != nil {
+			return err
+		}
+		defer jsonFile.Close()
+
+		// Encode discoveryResults slice as JSON and write to file
+		jsonEncoder := json.NewEncoder(jsonFile)
+		err = jsonEncoder.Encode(discoveryResults)
+		if err != nil {
+			return err
 		}
 	}
 
