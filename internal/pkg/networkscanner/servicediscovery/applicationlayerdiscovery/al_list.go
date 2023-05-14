@@ -22,4 +22,8 @@ var ApplicationDiscoveryList = []ApplicationDiscoveryListItem{
 		Discovery:  &MysqlDiscovery{},
 		Reqirement: string(servicediscovery.TCP),
 	},
+	{
+		Discovery:  &PostgresDiscovery{},
+		Reqirement: string(servicediscovery.TCP),
+	},
 }
