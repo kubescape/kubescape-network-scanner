@@ -16,3 +16,29 @@ The ScanResult struct defines the results of the network scan. It has fields to 
 The NetworkScanner interface defines a method Scan that takes a TargetDescription argument and returns an array of ScanResult and an error. The Scan method should perform a network scan and return an array of ScanResult for all open ports and their associated services.
 
 
+## Protocol and service discovery capabilities
+
+### Transport layer
+
+Support TCP/UDP
+
+### Session layer
+
+Supporting the discovery of TLS/SSL, we plan to support SSH in the future
+
+### Presenation layer
+
+Support of HTTP
+
+### Application
+
+* Kubernetes API server (needs testing)
+* Kubelet 
+* ETCD
+* Postgres - support detection of authentication enabled
+* MySQL/MariaDB
+* Kafka (testing)
+* Elasticsearch - need development
+* Redis - need development
+* Casandra - need development
+* 
