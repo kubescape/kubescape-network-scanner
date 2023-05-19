@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	_ "github.com/lib/pq"
+
 	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
 )
 
@@ -38,7 +40,7 @@ func (d *PostgresDiscovery) Protocol() string {
 }
 
 func (d *PostgresDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler, presentationLayerDiscoveryResult servicediscovery.IPresentationDiscoveryResult) (servicediscovery.IApplicationDiscoveryResult, error) {
-	db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d", sessionHandler.GetHost(), sessionHandler.GetPort()))
+	db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d sslmode=disable user= password=", sessionHandler.GetHost(), sessionHandler.GetPort()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to PostgreSQL server: %v", err)
 	}
