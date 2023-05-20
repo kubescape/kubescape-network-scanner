@@ -14,6 +14,7 @@ type DiscoveryResult struct {
 	SessionLayer      string
 	PresentationLayer string
 	ApplicationLayer  string
+	isAuthenticated   bool
 }
 
 func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
@@ -30,8 +31,6 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 
 			if sessionDiscoveryResult.GetIsDetected() {
 				result.SessionLayer = fmt.Sprintf("%v", sessionDiscoveryResult.Protocol())
-				fmt.Println("Session layer protocol detected:", sessionDiscoveryResult.Protocol())
-
 				// Connect to session handler
 				sessionHandler, err := sessionDiscoveryResult.GetSessionHandler()
 				if err != nil {
@@ -56,8 +55,6 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 						if presentationDiscoveryResult.GetIsDetected() {
 							presentationLayerDetected = true
 							result.PresentationLayer = fmt.Sprintf("%v", presentationDiscoveryResult.Protocol())
-							fmt.Println("Presentation layer protocol detected:", presentationDiscoveryResult.Protocol())
-							fmt.Println("Properties:", presentationDiscoveryResult.GetProperties())
 
 							// Discover application layer protocols
 							for _, applicationDiscoveryItem := range applicationlayerdiscovery.ApplicationDiscoveryList {
@@ -65,15 +62,14 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 									applicationDiscoveryResult, err := applicationDiscoveryItem.Discovery.Discover(sessionHandler, presentationDiscoveryResult)
 									if err != nil {
 										if err != io.EOF {
-											fmt.Println("Error while discovering session layer protocol:", err)
+											fmt.Println("Error while discovering application layer protocol:", err)
 										}
 										continue
 									}
 
 									if applicationDiscoveryResult.GetIsDetected() {
 										result.ApplicationLayer = fmt.Sprintf("%v", applicationDiscoveryResult.Protocol())
-										fmt.Println("Application layer protocol detected:", applicationDiscoveryResult.Protocol())
-										fmt.Println("Properties:", applicationDiscoveryResult.GetProperties())
+										result.isAuthenticated = applicationDiscoveryResult.GetIsAuthRequired()
 									} else {
 										fmt.Println("No application layer protocol detected")
 									}
@@ -86,7 +82,6 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 				}
 
 				if !presentationLayerDetected {
-					fmt.Println("No presentation layer protocol detected")
 
 					// Continue to discover application layer protocols
 					for _, applicationDiscoveryItem := range applicationlayerdiscovery.ApplicationDiscoveryList {
@@ -94,15 +89,15 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 							applicationDiscoveryResult, err := applicationDiscoveryItem.Discovery.Discover(sessionHandler, nil)
 							if err != nil {
 								if err != io.EOF {
-									fmt.Println("Error while discovering session layer protocol:", err)
+									fmt.Println("Error while discovering application layer protocol:", err)
 								}
 								continue
 							}
 
 							if applicationDiscoveryResult.GetIsDetected() {
 								result.ApplicationLayer = fmt.Sprintf("%v", applicationDiscoveryResult.Protocol())
-								fmt.Println("Application layer protocol detected:", applicationDiscoveryResult.Protocol())
-								fmt.Println("Properties:", applicationDiscoveryResult.GetProperties())
+								result.isAuthenticated = applicationDiscoveryResult.GetIsAuthRequired()
+
 							} else {
 								fmt.Println("No application layer protocol detected")
 							}
