@@ -78,6 +78,7 @@ func scan(cmd *cobra.Command, args []string) error {
 			fmt.Printf("Session Layer: %s\n", discoveryResult.SessionLayer)
 			fmt.Printf("Presentation Layer: %s\n", discoveryResult.PresentationLayer)
 			fmt.Printf("Application Layer: %s\n", discoveryResult.ApplicationLayer)
+			fmt.Printf("Authenticated: %v\n", discoveryResult.isAuthenticated)
 
 			// Store discovery results in a map
 			resultMap := map[string]interface{}{
@@ -88,6 +89,7 @@ func scan(cmd *cobra.Command, args []string) error {
 				"presentationlayer": discoveryResult.PresentationLayer,
 				"applicationlayer":  discoveryResult.ApplicationLayer,
 				"service":           discoveryResult.ApplicationLayer,
+				"authenticated":     discoveryResult.isAuthenticated,
 			}
 
 			// Append results to discoveryResults slice
@@ -106,6 +108,7 @@ func scan(cmd *cobra.Command, args []string) error {
 			fmt.Printf("Session Layer: %s\n", discoveryResult.SessionLayer)
 			fmt.Printf("Presentation Layer: %s\n", discoveryResult.PresentationLayer)
 			fmt.Printf("Application Layer: %s\n", discoveryResult.ApplicationLayer)
+			fmt.Printf("Authenticated: %v\n", discoveryResult.isAuthenticated)
 
 			// Store discovery results in a map
 			resultMap := map[string]interface{}{
@@ -116,6 +119,7 @@ func scan(cmd *cobra.Command, args []string) error {
 				"presentationlayer": discoveryResult.PresentationLayer,
 				"applicationlayer":  discoveryResult.ApplicationLayer,
 				"service":           discoveryResult.ApplicationLayer,
+				"authenticated":     discoveryResult.isAuthenticated,
 			}
 
 			// Append results to discoveryResults slice

@@ -14,4 +14,8 @@ var SessionDiscoveryList = []SessionLayerDiscoveryListItem{
 		Discovery:  &TlsSessionDiscovery{},
 		Reqirement: string(servicediscovery.TCP),
 	},
+	{
+		Discovery:  &TcpSessionDiscovery{},
+		Reqirement: string(servicediscovery.TCP),
+	},
 }
