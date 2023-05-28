@@ -145,6 +145,21 @@ func scan(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+// Function to check if the string is an IP address range
+func isIPRange(ip string) bool {
+	if strings.Contains(ip, "-") {
+		// Split IP address range
+		ipRange := strings.Split(ip, "-")
+		startIP := net.ParseIP(ipRange[0])
+		endIP := net.ParseIP(ipRange[1])
+		if startIP == nil || endIP == nil {
+			return false
+		}
+		return true
+	}
+	return false
+}
+
 func parseArgs(args []string) (*portdiscovery.ScanConfig, error) {
 	config := &portdiscovery.ScanConfig{}
 
@@ -153,7 +168,7 @@ func parseArgs(args []string) (*portdiscovery.ScanConfig, error) {
 	}
 
 	targetStr := args[0]
-	if strings.Contains(targetStr, "-") { // check if target is a range of IP addresses
+	if isIPRange(targetStr) { // check if target is a range of IP addresses
 		ipRange := strings.Split(targetStr, "-")
 		startIP := net.ParseIP(ipRange[0])
 		endIP := net.ParseIP(ipRange[1])
