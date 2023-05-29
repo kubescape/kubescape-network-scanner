@@ -83,8 +83,9 @@ kubectl wait --for=condition=ready pod -l run=bash-pod -n $namespace || cleanupa
 kubectl cp ../kubescape-network-scanner bash-pod:/usr/local/bin/kubescape-network-scanner -n $namespace || cleanupandexit
 
 # Run the kubescape-network-scanner binary in the pod
-#kubectl exec -it bash-pod -n $namespace -- kubescape-network-scanner Scan --tcp -o json $service_name $service_port > /tmp/output.json || cleanupandexit
-kubectl exec -it bash-pod -n $namespace -- kubescape-network-scanner Scan --tcp $service_name $service_port || cleanupandexit
+kubectl exec -it bash-pod -n $namespace -- kubescape-network-scanner Scan --tcp $service_name $service_port --json > /tmp/output.json || cleanupandexit
+#kubectl exec -it bash-pod -n $namespace -- kubescape-network-scanner Scan --tcp $service_name $service_port || cleanupandexit
+#kubectl exec -it bash-pod -n $namespace -- kubescape-network-scanner Scan --tcp 10.96.0.1 443 || cleanupandexit
 
 # Delete the namespace
 kubectl delete namespace $namespace
