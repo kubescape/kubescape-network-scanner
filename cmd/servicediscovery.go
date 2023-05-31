@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"io"
+	"sync"
 
 	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
 	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery/applicationlayerdiscovery"
@@ -17,22 +18,23 @@ type DiscoveryResult struct {
 	isAuthenticated   bool
 }
 
-func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
-	// Discover session layer protocols
-	for _, sessionDiscoveryItem := range sessionlayerdiscovery.SessionDiscoveryList {
-		if sessionDiscoveryItem.Reqirement == string(servicediscovery.TCP) {
-			sessionDiscoveryResult, err := sessionDiscoveryItem.Discovery.SessionLayerDiscover(host, port)
-			if err != nil {
-				if err != io.EOF {
-					fmt.Println("Error while discovering session layer protocol:", err)
-				}
-				continue
-			}
+const numGoroutines = 8
 
-			if sessionDiscoveryResult.GetIsDetected() {
-				result.SessionLayer = fmt.Sprintf("%v", sessionDiscoveryResult.Protocol())
-				// Connect to session handler
-				sessionHandler, err := sessionDiscoveryResult.GetSessionHandler()
+func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
+	sessionLayerChan := make(chan string)
+	presentationLayerChan := make(chan string)
+	applicationLayerChan := make(chan DiscoveryResult)
+
+	var wg sync.WaitGroup
+	semaphore := make(chan struct{}, numGoroutines)
+
+	// Discover session layer protocols
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, sessionDiscoveryItem := range sessionlayerdiscovery.SessionDiscoveryList {
+			if sessionDiscoveryItem.Reqirement == string(servicediscovery.TCP) {
+				sessionDiscoveryResult, err := sessionDiscoveryItem.Discovery.SessionLayerDiscover(host, port)
 				if err != nil {
 					if err != io.EOF {
 						fmt.Println("Error while discovering session layer protocol:", err)
@@ -40,31 +42,88 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 					continue
 				}
 
-				// Discover presentation layer protocols
-				presentationLayerDetected := false
-				for _, presentationDiscoveryItem := range presentationlayerdiscovery.PresentationDiscoveryList {
-					if presentationDiscoveryItem.Reqirement == string(servicediscovery.TCP) {
-						presentationDiscoveryResult, err := presentationDiscoveryItem.Discovery.Discover(sessionHandler)
-						if err != nil {
-							if err != io.EOF {
-								fmt.Println("Error while discovering session layer protocol:", err)
+				if sessionDiscoveryResult.GetIsDetected() {
+					sessionLayer := fmt.Sprintf("%v", sessionDiscoveryResult.Protocol())
+					sessionLayerChan <- sessionLayer
+					// Connect to session handler
+					sessionHandler, err := sessionDiscoveryResult.GetSessionHandler()
+					if err != nil {
+						if err != io.EOF {
+							fmt.Println("Error while discovering session layer protocol:", err)
+						}
+						continue
+					}
+
+					wg.Add(1)
+					semaphore <- struct{}{}
+					go func(sessionHandler servicediscovery.ISessionHandler) {
+						defer func() {
+							<-semaphore
+							wg.Done()
+						}()
+
+						// Discover presentation layer protocols
+						presentationLayerDetected := false
+						for _, presentationDiscoveryItem := range presentationlayerdiscovery.PresentationDiscoveryList {
+							if presentationDiscoveryItem.Reqirement == string(servicediscovery.TCP) {
+								presentationDiscoveryResult, err := presentationDiscoveryItem.Discovery.Discover(sessionHandler)
+								if err != nil {
+									if err != io.EOF {
+										fmt.Println("Error while discovering session layer protocol:", err)
+										continue
+									}
+								}
+
+								if presentationDiscoveryResult.GetIsDetected() {
+									presentationLayerDetected = true
+									result.PresentationLayer = fmt.Sprintf("%v", presentationDiscoveryResult.Protocol())
+
+									wg.Add(1)
+									semaphore <- struct{}{}
+									go func(presentationDiscoveryResult servicediscovery.IPresentationDiscoveryResult) {
+										defer func() {
+											<-semaphore
+											wg.Done()
+										}()
+
+										// Discover application layer protocols
+										for _, applicationDiscoveryItem := range applicationlayerdiscovery.ApplicationDiscoveryList {
+											if applicationDiscoveryItem.Reqirement == string(servicediscovery.TCP) {
+												applicationDiscoveryResult, err := applicationDiscoveryItem.Discovery.Discover(sessionHandler, presentationDiscoveryResult)
+												if err != nil {
+													if err != io.EOF {
+														fmt.Println("Error while discovering application layer protocol:", err)
+														continue
+													}
+												}
+
+												if applicationDiscoveryResult.GetIsDetected() {
+													result.ApplicationLayer = fmt.Sprintf("%v", applicationDiscoveryResult.Protocol())
+													result.isAuthenticated = applicationDiscoveryResult.GetIsAuthRequired()
+												} else {
+													fmt.Println("No application layer protocol detected")
+												}
+											}
+										}
+
+										applicationLayerChan <- result
+									}(presentationDiscoveryResult)
+
+									break // Stop checking presentation layer protocols
+								}
 							}
-							continue
 						}
 
-						if presentationDiscoveryResult.GetIsDetected() {
-							presentationLayerDetected = true
-							result.PresentationLayer = fmt.Sprintf("%v", presentationDiscoveryResult.Protocol())
-
-							// Discover application layer protocols
+						if !presentationLayerDetected {
+							// Continue to discover application layer protocols
 							for _, applicationDiscoveryItem := range applicationlayerdiscovery.ApplicationDiscoveryList {
 								if applicationDiscoveryItem.Reqirement == string(servicediscovery.TCP) {
-									applicationDiscoveryResult, err := applicationDiscoveryItem.Discovery.Discover(sessionHandler, presentationDiscoveryResult)
+									applicationDiscoveryResult, err := applicationDiscoveryItem.Discovery.Discover(sessionHandler, nil)
 									if err != nil {
 										if err != io.EOF {
 											fmt.Println("Error while discovering application layer protocol:", err)
+											continue
 										}
-										continue
 									}
 
 									if applicationDiscoveryResult.GetIsDetected() {
@@ -75,46 +134,40 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 									}
 								}
 							}
-
-							break // Stop checking presentation layer protocols
+							applicationLayerChan <- result
 						}
-					}
+
+						presentationLayerChan <- result.PresentationLayer
+					}(sessionHandler)
+
+					break // Stop checking session layer protocols
 				}
-
-				if !presentationLayerDetected {
-
-					// Continue to discover application layer protocols
-					for _, applicationDiscoveryItem := range applicationlayerdiscovery.ApplicationDiscoveryList {
-						if applicationDiscoveryItem.Reqirement == string(servicediscovery.TCP) {
-							applicationDiscoveryResult, err := applicationDiscoveryItem.Discovery.Discover(sessionHandler, nil)
-							if err != nil {
-								if err != io.EOF {
-									fmt.Println("Error while discovering application layer protocol:", err)
-								}
-								continue
-							}
-
-							if applicationDiscoveryResult.GetIsDetected() {
-								result.ApplicationLayer = fmt.Sprintf("%v", applicationDiscoveryResult.Protocol())
-								result.isAuthenticated = applicationDiscoveryResult.GetIsAuthRequired()
-
-							} else {
-								fmt.Println("No application layer protocol detected")
-							}
-						}
-					}
-				}
-
-			} else {
-				fmt.Println("No session layer protocol detected")
 			}
-
-			// If session layer protocol not TCP, continue to the next session layer protocol
-			continue
 		}
+		close(presentationLayerChan)
+		close(applicationLayerChan)
+	}()
 
-		// If session layer protocol not TCP, continue to the next session layer protocol
-		continue
+	go func() {
+		wg.Wait()
+		close(sessionLayerChan)
+	}()
+
+	result.SessionLayer = <-sessionLayerChan
+
+	// Wait for presentation layer result
+	for presentationLayer := range presentationLayerChan {
+		if presentationLayer != "" {
+			result.PresentationLayer = presentationLayer
+			break
+		}
 	}
+
+	// Wait for application layer result
+	appResult := <-applicationLayerChan
+	if appResult.ApplicationLayer != "" {
+		result = appResult
+	}
+
 	return result, nil
 }

@@ -3,7 +3,6 @@ package applicationlayerdiscovery
 import (
 	"database/sql"
 	"fmt"
-	"strings"
 
 	_ "github.com/lib/pq"
 
@@ -40,37 +39,30 @@ func (d *PostgresDiscovery) Protocol() string {
 }
 
 func (d *PostgresDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler, presentationLayerDiscoveryResult servicediscovery.IPresentationDiscoveryResult) (servicediscovery.IApplicationDiscoveryResult, error) {
-	db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d sslmode=disable user= password= ", sessionHandler.GetHost(), sessionHandler.GetPort()))
+	db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d sslmode=disable", sessionHandler.GetHost(), sessionHandler.GetPort()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to PostgreSQL server: %v", err)
 	}
 	defer db.Close()
 
+	// Here: we know it is postgresql, but we don't know if it is authenticated or not
+	result := &PostgresDiscoveryResult{
+		isDetected:      true,
+		isAuthenticated: true,
+		properties:      nil, // Set properties to nil as it's not used in this case
+	}
+
 	// Use the connection to query the PostgreSQL server for its version
 	var version string
 	err = db.QueryRow("SELECT version()").Scan(&version)
 	if err != nil {
-		// Check if the error message contains "postgresql" and set isDetected to true
-		if strings.Contains(err.Error(), "pg_hba.conf") {
-			return &PostgresDiscoveryResult{
-				isDetected:      true,
-				isAuthenticated: true,
-				properties:      nil, // Set properties to nil as it's not used in this case
-			}, nil
-		}
-		return nil, fmt.Errorf("failed to query PostgreSQL server: %v", err)
-	}
-
-	// Check if the PostgreSQL server is running and return a discovery result
-	if strings.Contains(version, "PostgreSQL") {
-		return &PostgresDiscoveryResult{
-			isDetected:      true,
-			isAuthenticated: false,
-			properties: map[string]interface{}{
-				"version": version,
-			},
-		}, nil
+		result.isAuthenticated = true
+		return result, nil
 	} else {
-		return nil, nil
+		result.isAuthenticated = false
+		result.properties = map[string]interface{}{
+			"version": version,
+		}
+		return result, nil
 	}
 }
