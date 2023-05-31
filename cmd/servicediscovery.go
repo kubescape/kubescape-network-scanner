@@ -19,15 +19,17 @@ type DiscoveryResult struct {
 }
 
 func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
-	var wg sync.WaitGroup
+	var sessionWg sync.WaitGroup
+	var presentationWg sync.WaitGroup
+	var applicationWg sync.WaitGroup
 
 	// Discover session layer protocols concurrently
 	sessionLayerChan := make(chan sessionLayerDiscoveryResult)
 	for _, sessionDiscoveryItem := range sessionlayerdiscovery.SessionDiscoveryList {
 		if sessionDiscoveryItem.Reqirement == string(servicediscovery.TCP) {
-			wg.Add(1)
+			sessionWg.Add(1)
 			go func(sessionDiscoveryItem sessionlayerdiscovery.SessionLayerDiscoveryListItem) {
-				defer wg.Done()
+				defer sessionWg.Done()
 				sessionDiscoveryResult, err := sessionDiscoveryItem.Discovery.SessionLayerDiscover(host, port)
 				if err != nil {
 					if err != io.EOF {
@@ -41,7 +43,7 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 	}
 
 	go func() {
-		wg.Wait()
+		sessionWg.Wait()
 		close(sessionLayerChan)
 	}()
 
@@ -63,9 +65,9 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 			presentationLayerChan := make(chan presentationLayerDiscoveryResult)
 			for _, presentationDiscoveryItem := range presentationlayerdiscovery.PresentationDiscoveryList {
 				if presentationDiscoveryItem.Reqirement == string(servicediscovery.TCP) {
-					wg.Add(1)
+					presentationWg.Add(1)
 					go func(presentationDiscoveryItem presentationlayerdiscovery.PresentationLayerDiscoveryListItem) {
-						defer wg.Done()
+						defer presentationWg.Done()
 						presentationDiscoveryResult, err := presentationDiscoveryItem.Discovery.Discover(sessionHandler)
 						if err != nil {
 							if err != io.EOF {
@@ -79,7 +81,7 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 			}
 
 			go func() {
-				wg.Wait()
+				presentationWg.Wait()
 				close(presentationLayerChan)
 			}()
 
@@ -93,14 +95,11 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 					applicationLayerChan := make(chan applicationLayerDiscoveryResult)
 					for _, applicationDiscoveryItem := range applicationlayerdiscovery.ApplicationDiscoveryList {
 						if applicationDiscoveryItem.Reqirement == string(servicediscovery.TCP) {
-							wg.Add(1)
+							applicationWg.Add(1)
 							go func(applicationDiscoveryItem applicationlayerdiscovery.ApplicationDiscoveryListItem) {
-								defer wg.Done()
+								defer applicationWg.Done()
 								applicationDiscoveryResult, err := applicationDiscoveryItem.Discovery.Discover(sessionHandler, presentationDiscoveryResult)
 								if err != nil {
-									if err != io.EOF {
-										fmt.Println("Error while discovering application layer protocol:", err)
-									}
 									return
 								}
 								applicationLayerChan <- applicationDiscoveryResult
@@ -109,7 +108,7 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 					}
 
 					go func() {
-						wg.Wait()
+						applicationWg.Wait()
 						close(applicationLayerChan)
 					}()
 
@@ -133,14 +132,11 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 				applicationLayerChan := make(chan applicationLayerDiscoveryResult)
 				for _, applicationDiscoveryItem := range applicationlayerdiscovery.ApplicationDiscoveryList {
 					if applicationDiscoveryItem.Reqirement == string(servicediscovery.TCP) {
-						wg.Add(1)
+						applicationWg.Add(1)
 						go func(applicationDiscoveryItem applicationlayerdiscovery.ApplicationDiscoveryListItem) {
-							defer wg.Done()
+							defer applicationWg.Done()
 							applicationDiscoveryResult, err := applicationDiscoveryItem.Discovery.Discover(sessionHandler, nil)
 							if err != nil {
-								if err != io.EOF {
-									fmt.Println("Error while discovering application layer protocol:", err)
-								}
 								return
 							}
 							applicationLayerChan <- applicationDiscoveryResult
@@ -149,7 +145,7 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 				}
 
 				go func() {
-					wg.Wait()
+					applicationWg.Wait()
 					close(applicationLayerChan)
 				}()
 
