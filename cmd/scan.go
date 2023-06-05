@@ -13,6 +13,7 @@ import (
 )
 
 var config portdiscovery.ScanConfig
+var jsonFileName string
 
 var (
 	// Input flags
@@ -46,6 +47,7 @@ func init() {
 	ScanCmd.Flags().BoolVar(&udpFlag, "udp", false, "Scan only UDP ports")
 	ScanCmd.Flags().StringSliceVar(&serviceFlag, "service", []string{}, "Service type(s) to scan (e.g. http, ssh)")
 	ScanCmd.Flags().BoolVar(&jsonflag, "json", false, "Output results in JSON format")
+	ScanCmd.Flags().StringVar(&jsonFileName, "o", "", "Filename to store JSON data")
 
 	// Add Scan command to root command
 	rootCmd.AddCommand(ScanCmd)
@@ -126,9 +128,15 @@ func scan(cmd *cobra.Command, args []string) error {
 			discoveryResults = append(discoveryResults, resultMap)
 		}
 	}
+
 	if jsonflag {
+		// Check if a filename is provided
+		if len(jsonFileName) == 0 {
+			return fmt.Errorf("Please provide a filename to store the JSON data")
+		}
+
 		// Create a file for writing
-		jsonFile, err := os.Create("kubescannerresult.json")
+		jsonFile, err := os.Create(jsonFileName)
 		if err != nil {
 			return err
 		}
@@ -140,6 +148,8 @@ func scan(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
+
+		fmt.Printf("JSON data stored in file: %s\n", jsonFileName)
 	}
 
 	return nil
