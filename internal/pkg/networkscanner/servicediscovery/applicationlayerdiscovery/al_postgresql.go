@@ -56,7 +56,6 @@ func (d *PostgresDiscovery) Discover(sessionHandler servicediscovery.ISessionHan
 	var version string
 	err = db.QueryRow("SELECT version()").Scan(&version)
 	if err != nil {
-		result.isAuthenticated = true
 		return result, nil
 	} else {
 		result.isAuthenticated = false
@@ -65,4 +64,5 @@ func (d *PostgresDiscovery) Discover(sessionHandler servicediscovery.ISessionHan
 		}
 		return result, nil
 	}
+
 }
