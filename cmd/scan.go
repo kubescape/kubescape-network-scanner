@@ -13,6 +13,7 @@ import (
 )
 
 var config portdiscovery.ScanConfig
+var jsonFileName string
 
 var (
 	// Input flags
@@ -156,6 +157,8 @@ func scan(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
+
+		fmt.Printf("JSON data stored in file: %s\n", jsonFileName)
 	}
 
 	return nil
