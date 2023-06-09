@@ -25,10 +25,12 @@ var (
 	udpFlag      bool
 	serviceFlag  []string
 	jsonflag     bool
+	// Output file flag
+	outputFileFlag string
 
 	// Scan command
 	ScanCmd = &cobra.Command{
-		Use:   "Scan",
+		Use:   "scan",
 		Short: "Discover open ports and services on a given target or a list of targets.",
 		Long:  "Discover open ports with services on a given target using TCP and/or UDP protocols.",
 		RunE:  scan,
@@ -46,6 +48,8 @@ func init() {
 	ScanCmd.Flags().BoolVar(&udpFlag, "udp", false, "Scan only UDP ports")
 	ScanCmd.Flags().StringSliceVar(&serviceFlag, "service", []string{}, "Service type(s) to scan (e.g. http, ssh)")
 	ScanCmd.Flags().BoolVar(&jsonflag, "json", false, "Output results in JSON format")
+	// Output file flag
+	ScanCmd.Flags().StringVar(&outputFileFlag, "output", "", "Output file to write results to")
 
 	// Add Scan command to root command
 	rootCmd.AddCommand(ScanCmd)
@@ -58,27 +62,34 @@ func scan(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	if outputFileFlag != "" {
+		fmt.Printf("Output file: %s\n", outputFileFlag)
+	}
+
 	// Scan targets
 	scanResults := portdiscovery.ScanTargets(config.Targets, config.TcpOnly, config.UdpOnly, config.Ports, config.Timeout)
 
 	// Print scan results
-	portdiscovery.PrintResults(scanResults)
+	if !jsonflag {
+		portdiscovery.PrintResults(scanResults)
+	}
+
 	// Iterate through each scan result and perform service discovery
 	for _, target := range scanResults {
 		// Perform service discovery for open TCP ports
 		for _, port := range target.TCPPorts {
 			discoveryResult, err := ScanTargets(target.Host, port)
 			if err != nil {
-				fmt.Printf("Error while discovering services on %s:%d: %s\n", target.Host, port, err)
+				fmt.Fprintf(os.Stderr, "Error while discovering services on %s:%d: %s\n", target.Host, port, err)
 				continue
 			}
 
 			// Print discovered services
-			fmt.Printf("Services discovered on %s:%d:\n", target.Host, port)
-			fmt.Printf("Session Layer: %s\n", discoveryResult.SessionLayer)
-			fmt.Printf("Presentation Layer: %s\n", discoveryResult.PresentationLayer)
-			fmt.Printf("Application Layer: %s\n", discoveryResult.ApplicationLayer)
-			fmt.Printf("Authenticated: %v\n", discoveryResult.isAuthenticated)
+			fmt.Fprintf(os.Stderr, "Services discovered on %s:%d:\n", target.Host, port)
+			fmt.Fprintf(os.Stderr, "Session Layer: %s\n", discoveryResult.SessionLayer)
+			fmt.Fprintf(os.Stderr, "Presentation Layer: %s\n", discoveryResult.PresentationLayer)
+			fmt.Fprintf(os.Stderr, "Application Layer: %s\n", discoveryResult.ApplicationLayer)
+			fmt.Fprintf(os.Stderr, "Authenticated: %v\n", discoveryResult.isAuthenticated)
 
 			// Store discovery results in a map
 			resultMap := map[string]interface{}{
@@ -99,17 +110,16 @@ func scan(cmd *cobra.Command, args []string) error {
 		for _, port := range target.UDPPorts {
 			discoveryResult, err := ScanTargets(target.Host, port)
 			if err != nil {
-				fmt.Printf("Error while discovering services on %s:%d: %s\n", target.Host, port, err)
+				fmt.Fprintf(os.Stderr, "Error while discovering services on %s:%d: %s\n", target.Host, port, err)
 				continue
 			}
 
 			// Print discovered services
-			fmt.Printf("Services discovered on %s:%d:\n", target.Host, port)
-			fmt.Printf("Session Layer: %s\n", discoveryResult.SessionLayer)
-			fmt.Printf("Presentation Layer: %s\n", discoveryResult.PresentationLayer)
-			fmt.Printf("Application Layer: %s\n", discoveryResult.ApplicationLayer)
-			fmt.Printf("Authenticated: %v\n", discoveryResult.isAuthenticated)
-
+			fmt.Fprintf(os.Stderr, "Services discovered on %s:%d:\n", target.Host, port)
+			fmt.Fprintf(os.Stderr, "Session Layer: %s\n", discoveryResult.SessionLayer)
+			fmt.Fprintf(os.Stderr, "Presentation Layer: %s\n", discoveryResult.PresentationLayer)
+			fmt.Fprintf(os.Stderr, "Application Layer: %s\n", discoveryResult.ApplicationLayer)
+			fmt.Fprintf(os.Stderr, "Authenticated: %v\n", discoveryResult.isAuthenticated)
 			// Store discovery results in a map
 			resultMap := map[string]interface{}{
 				"host":              target.Host,
@@ -126,16 +136,22 @@ func scan(cmd *cobra.Command, args []string) error {
 			discoveryResults = append(discoveryResults, resultMap)
 		}
 	}
-	if jsonflag {
-		// Create a file for writing
-		jsonFile, err := os.Create("kubescannerresult.json")
-		if err != nil {
-			return err
-		}
-		defer jsonFile.Close()
 
+	// Write results
+	if jsonflag {
+		var outputFile *os.File = os.Stdout
+		// Check if output file is specified
+		if outputFileFlag != "" {
+			// Open output file
+			var err error
+			outputFile, err = os.OpenFile(outputFileFlag, os.O_CREATE|os.O_WRONLY, 0644)
+			if err != nil {
+				return err
+			}
+			defer outputFile.Close()
+		}
 		// Encode discoveryResults slice as JSON and write to file
-		jsonEncoder := json.NewEncoder(jsonFile)
+		jsonEncoder := json.NewEncoder(outputFile)
 		err = jsonEncoder.Encode(discoveryResults)
 		if err != nil {
 			return err
@@ -164,7 +180,7 @@ func parseArgs(args []string) (*portdiscovery.ScanConfig, error) {
 	config := &portdiscovery.ScanConfig{}
 
 	if len(args) < 1 {
-		return nil, fmt.Errorf("Usage: Scan [--tcp|--udp] <host or ip_address or ip_range> [ports...]")
+		return nil, fmt.Errorf("Usage: scan [--tcp|--udp] <host or ip_address or ip_range> [ports...]")
 	}
 
 	targetStr := args[0]
@@ -177,7 +193,7 @@ func parseArgs(args []string) (*portdiscovery.ScanConfig, error) {
 		}
 		for ip := startIP; ip.String() <= endIP.String(); portdiscovery.IncIP(ip) {
 			if ip.To4() == nil {
-				fmt.Printf("IPv6 address not supported: %s\n", ip.String())
+				fmt.Fprintf(os.Stderr, "IPv6 address not supported: %s\n", ip.String())
 				continue
 			}
 			target := portdiscovery.ScanTarget{IPStart: ip}
