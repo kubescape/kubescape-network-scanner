@@ -11,19 +11,27 @@ type ApplicationDiscoveryListItem struct {
 
 var ApplicationDiscoveryList = []ApplicationDiscoveryListItem{
 	//{
-	//Discovery:  &KubeletDiscovery{},
-	//Reqirement: string(HTTP),
+	//	Discovery:  &KubeletDiscovery{},
+	//	Reqirement: string(HTTP),
 	//},
 	//{
 	//	Discovery:  &KubeApiServerDiscovery{},
 	//	Reqirement: string(HTTP),
 	//},
+	//{
+	//	Discovery:  &MysqlDiscovery{},
+	//	Reqirement: string(servicediscovery.TCP),
+	//},
+	//{
+	//	Discovery:  &PostgresDiscovery{},
+	//	Reqirement: string(servicediscovery.TCP),
+	//},
 	{
-		Discovery:  &MysqlDiscovery{},
+		Discovery:  &RedisDiscovery{},
 		Reqirement: string(servicediscovery.TCP),
 	},
 	{
-		Discovery:  &PostgresDiscovery{},
+		Discovery:  &EtcdDiscovery{},
 		Reqirement: string(servicediscovery.TCP),
 	},
 }
