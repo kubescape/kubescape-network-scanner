@@ -64,7 +64,7 @@ func (d *EtcdDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler
 
 	result := &EtcdDiscoveryResult{
 		isDetected:      true,
-		isAuthenticated: false,
+		isAuthenticated: true,
 		properties:      nil, // Set properties to nil as it's not used in this case
 	}
 
