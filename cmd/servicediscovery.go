@@ -155,7 +155,6 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 						result.ApplicationLayer = fmt.Sprintf("%v", applicationDiscoveryResult.Protocol())
 						result.isAuthenticated = applicationDiscoveryResult.GetIsAuthRequired()
 					} else {
-						fmt.Println("No application layer protocol detected")
 					}
 				}
 			}
