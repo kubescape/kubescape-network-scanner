@@ -14,10 +14,10 @@ var ApplicationDiscoveryList = []ApplicationDiscoveryListItem{
 	//	Discovery:  &KubeletDiscovery{},
 	//	Reqirement: string(HTTP),
 	//},
-	//{
-	//	Discovery:  &KubeApiServerDiscovery{},
-	//	Reqirement: string(HTTP),
-	//},
+	{
+		Discovery:  &KubeApiServerDiscovery{},
+		Reqirement: string(servicediscovery.TCP),
+	},
 	//{
 	//	Discovery:  &MysqlDiscovery{},
 	//	Reqirement: string(servicediscovery.TCP),

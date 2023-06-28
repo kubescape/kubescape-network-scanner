@@ -37,10 +37,23 @@ if [ ! -d "apps/$application_name" ]; then
     exit 1
 fi
 
-# Check if app.yaml exists
-if [ ! -f "apps/$application_name/app.yaml" ]; then
-    echo "app.yaml does not exist"
+
+# Check if app.yaml or config.yaml exists
+if [ ! -f "apps/$application_name/app.yaml" ] && [ ! -f "apps/$application_name/config.yaml" ]; then
+    echo "app.yaml or config.yaml does not exist"
     exit 1
+fi
+
+APP_YAML=""
+# Check if app.yaml exists
+if [ -f "apps/$application_name/app.yaml" ]; then
+    APP_YAML="apps/$application_name/app.yaml"
+fi
+
+CONFIG_YAML=""
+# Check if config.yaml exists
+if [ -f "apps/$application_name/config.yaml" ]; then
+    CONFIG_YAML="apps/$application_name/config.yaml"
 fi
 
 # Check if expected output json file exists
@@ -55,17 +68,28 @@ namespace="test-$(openssl rand -hex 4)"
 # Create a namespace
 kubectl create namespace $namespace || exit 1
 
-# Apply app.yaml
-kubectl apply -f apps/$application_name/app.yaml -n $namespace || cleanupandexit
+# If app.yaml exists, apply it
+if [ ! -z "$APP_YAML" ]; then
+    kubectl apply -f $APP_YAML -n $namespace || cleanupandexit
+    # Wait for the application to be ready
+    kubectl wait --for=condition=ready pod -l app=$application_name -n $namespace || cleanupandexit
+fi
 
-# Wait for the application to be ready
-kubectl wait --for=condition=ready pod -l app=$application_name -n $namespace || cleanupandexit
 
-# Get the application's service name
-service_name=$(kubectl get service -l app=$application_name -n $namespace -o jsonpath='{.items[0].metadata.name}')
 
-# Get the application's service port
-service_port=$(kubectl get service -l app=$application_name -n $namespace -o jsonpath='{.items[0].spec.ports[0].port}')
+# If config.yaml exists, get service name and port from it
+if [ ! -z "$CONFIG_YAML" ]; then
+    # Use sed to extract serviceName and servicePort from config.yaml
+    service_name=$(cat $CONFIG_YAML | sed -n 's/.*serviceName: *//p')
+    service_port=$(cat $CONFIG_YAML | sed -n 's/.*servicePort: *//p')
+else
+    # Get the application's service name
+    service_name=$(kubectl get service -l app=$application_name -n $namespace -o jsonpath='{.items[0].metadata.name}')
+
+    # Get the application's service port
+    service_port=$(kubectl get service -l app=$application_name -n $namespace -o jsonpath='{.items[0].spec.ports[0].port}')
+fi
+
 
 # Make sure that service name and port are not empty
 if [ -z "$service_name" ] || [ -z "$service_port" ]; then

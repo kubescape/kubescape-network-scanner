@@ -1,0 +1,3 @@
+testType: "existingService"
+serviceName: kubernetes.default.svc.cluster.local
+servicePort: 443
