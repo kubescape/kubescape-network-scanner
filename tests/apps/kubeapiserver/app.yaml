@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubeapiserver-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kubeapiserver
+  template:
+    metadata:
+      labels:
+        app: kubeapiserver
+    spec:
+      containers:
+        - name: kubeapiserver
+          image: k8s.gcr.io/kube-apiserver:v1.23.11
+          command:
+            - kube-apiserver
+          args:
+            - "--advertise-address=0.0.0.0"
+            - "--secure-port=6443"
+            - "--authorization-mode=AlwaysAllow"
+          ports:
+            - containerPort: 6443
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubeapiserver-service
+  labels:
+    app: kubeapiserver
+spec:
+  selector:
+    app: kubeapiserver
+  ports:
+    - protocol: TCP
+      port: 6443
+      targetPort: 6443
