@@ -3,6 +3,8 @@ package sessionlayerdiscovery
 import (
 	"crypto/tls"
 	"fmt"
+	"net"
+	"time"
 
 	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
 )
@@ -27,12 +29,18 @@ func (d *TlsSessionDiscovery) Protocol() servicediscovery.TransportProtocol {
 }
 
 func (d *TlsSessionDiscovery) SessionLayerDiscover(hostAddr string, port int) (servicediscovery.ISessionLayerDiscoveryResult, error) {
+	// Create a dialer with a timeout of 50 ms
+	dialer := net.Dialer{
+		Timeout: 50 * time.Millisecond,
+	}
+
 	// Create a TLS config with InsecureSkipVerify set
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: true,
 	}
 
-	conn, err := tls.Dial("tcp", fmt.Sprintf("%s:%d", hostAddr, port), tlsConfig)
+	// Dial with the specified dialer and TLS config
+	conn, err := tls.DialWithDialer(&dialer, "tcp", fmt.Sprintf("%s:%d", hostAddr, port), tlsConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -58,13 +66,18 @@ func (d *TlsSessionDiscoveryResult) GetSessionHandler() (servicediscovery.ISessi
 }
 
 func (d *TlsSessionHandler) Connect() error {
+	// Create a dialer with a timeout of 50 ms
+	dialer := net.Dialer{
+		Timeout: 50 * time.Millisecond,
+	}
 
 	// Create a TLS config with InsecureSkipVerify set
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: true,
 	}
 
-	conn, err := tls.Dial("tcp", fmt.Sprintf("%s:%d", d.host, d.port), tlsConfig)
+	// Dial with the specified dialer and TLS config
+	conn, err := tls.DialWithDialer(&dialer, "tcp", fmt.Sprintf("%s:%d", d.host, d.port), tlsConfig)
 	if err != nil {
 		return err
 	}

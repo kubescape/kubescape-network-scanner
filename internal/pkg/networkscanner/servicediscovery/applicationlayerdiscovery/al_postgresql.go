@@ -39,7 +39,8 @@ func (d *PostgresDiscovery) Protocol() string {
 }
 
 func (d *PostgresDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler, presentationLayerDiscoveryResult servicediscovery.IPresentationDiscoveryResult) (servicediscovery.IApplicationDiscoveryResult, error) {
-	db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d sslmode=disable", sessionHandler.GetHost(), sessionHandler.GetPort()))
+	// Set a timeout of 50 ms
+	db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d sslmode=disable connect_timeout=5", sessionHandler.GetHost(), sessionHandler.GetPort()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to PostgreSQL server: %v", err)
 	}
@@ -47,7 +48,7 @@ func (d *PostgresDiscovery) Discover(sessionHandler servicediscovery.ISessionHan
 
 	// Here: we know it is postgresql, but we don't know if it is authenticated or not
 	result := &PostgresDiscoveryResult{
-		isDetected:      true,
+		isDetected:      false,
 		isAuthenticated: true,
 		properties:      nil, // Set properties to nil as it's not used in this case
 	}
