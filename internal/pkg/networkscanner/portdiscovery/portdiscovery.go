@@ -140,7 +140,7 @@ func scanIP(ip string, proto string, ports []int, timeout time.Duration) network
 				<-semaphore
 			}()
 			if isOpen(ip, port, proto, timeout) {
-				fmt.Printf("%s:%d/%s is open\n", ip, port, proto)
+				//fmt.Printf("%s:%d/%s is open\n", ip, port, proto)
 				openPorts <- port
 			}
 		}(port)
@@ -153,7 +153,7 @@ func scanIP(ip string, proto string, ports []int, timeout time.Duration) network
 			go func(port int) {
 				defer wg.Done()
 				if isOpen(ip, port, proto, timeout) {
-					fmt.Printf("%s:%d/%s is open\n", ip, port, proto)
+					//fmt.Printf("%s:%d/%s is open\n", ip, port, proto)
 					openPorts <- port
 				}
 			}(port)
