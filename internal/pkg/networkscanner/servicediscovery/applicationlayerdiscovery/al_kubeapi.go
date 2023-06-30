@@ -1,6 +1,7 @@
 package applicationlayerdiscovery
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/http"
 
@@ -38,9 +39,18 @@ func (d *KubeApiServerDiscovery) Protocol() string {
 
 func (d *KubeApiServerDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler, presentationLayerDiscoveryResult servicediscovery.IPresentationDiscoveryResult) (servicediscovery.IApplicationDiscoveryResult, error) {
 
-	url := fmt.Sprintf("http://%s:%d/api", sessionHandler.GetHost(), sessionHandler.GetPort())
+	url := fmt.Sprintf("https://%s:%d/api", sessionHandler.GetHost(), sessionHandler.GetPort())
+
+	// Create a custom transport with insecure skip verify
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	// Create an http.Client with the custom transport
+	client := &http.Client{Transport: tr}
+
 	// Send a GET request to the Kubernetes API server
-	resp, err := http.Get(url)
+	resp, err := client.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to Kubernetes API server: %v", err)
 	}
@@ -48,7 +58,7 @@ func (d *KubeApiServerDiscovery) Discover(sessionHandler servicediscovery.ISessi
 
 	// Check the response status code
 	if resp.StatusCode == http.StatusOK {
-		// Kubernetes API server is detected
+		// Kubernetes API server is detected and not authenticated
 		result := &KubeApiServerDiscoveryResult{
 			isDetected:     true,
 			isAuthRequired: false,
@@ -57,12 +67,20 @@ func (d *KubeApiServerDiscovery) Discover(sessionHandler servicediscovery.ISessi
 			},
 		}
 		return result, nil
+	} else if resp.StatusCode == http.StatusUnauthorized {
+		// Kubernetes API server is detected and authenticated
+		result := &KubeApiServerDiscoveryResult{
+			isDetected:     true,
+			isAuthRequired: true,
+			properties:     nil,
+		}
+		return result, nil
 	}
 
-	// If we are able to detect the kubernetes api server but it is authenticated
+	// If the response status is neither OK (200) nor Unauthorized (401), the Kubernetes API server is not detected
 	result := &KubeApiServerDiscoveryResult{
-		isDetected:     true,
-		isAuthRequired: true,
+		isDetected:     false,
+		isAuthRequired: false,
 		properties:     nil,
 	}
 	return result, nil

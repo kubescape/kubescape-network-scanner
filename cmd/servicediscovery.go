@@ -16,6 +16,7 @@ type DiscoveryResult struct {
 	PresentationLayer string
 	ApplicationLayer  string
 	isAuthenticated   bool
+	properties        map[string]interface{}
 }
 
 func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
@@ -118,6 +119,7 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 						if applicationDiscoveryResult.GetIsDetected() {
 							result.ApplicationLayer = fmt.Sprintf("%v", applicationDiscoveryResult.Protocol())
 							result.isAuthenticated = applicationDiscoveryResult.GetIsAuthRequired()
+							result.properties = applicationDiscoveryResult.GetProperties()
 						} else {
 						}
 					}
@@ -154,6 +156,7 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 					if applicationDiscoveryResult.GetIsDetected() {
 						result.ApplicationLayer = fmt.Sprintf("%v", applicationDiscoveryResult.Protocol())
 						result.isAuthenticated = applicationDiscoveryResult.GetIsAuthRequired()
+						result.properties = applicationDiscoveryResult.GetProperties()
 					} else {
 					}
 				}
