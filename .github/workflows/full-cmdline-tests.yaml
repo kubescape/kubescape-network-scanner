@@ -14,6 +14,11 @@ jobs:
         with:
           go-version: 1.19
 
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
       - name: Build Go utility
         run: make build
 
@@ -37,4 +42,11 @@ jobs:
         run: sudo apt-get install jq -y
 
       - name: Run test script
-        run: ./scripts/run-all-tests.sh
+        run: python ./scripts/run-all-tests.py
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        if: always()
+        with:
+          files: tests/test-results.xml
+
