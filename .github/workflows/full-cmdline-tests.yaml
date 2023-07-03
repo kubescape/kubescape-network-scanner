@@ -1,6 +1,14 @@
 name: Test Kubernetes Cluster
 
-on: [push, pull_request]
+on:
+  pull_request:
+    types:
+      [ opened, synchronize, reopened ]
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
 
 jobs:
   test:
