@@ -48,7 +48,7 @@ func (d *PostgresDiscovery) Discover(sessionHandler servicediscovery.ISessionHan
 
 	// Here: we know it is postgresql, but we don't know if it is authenticated or not
 	result := &PostgresDiscoveryResult{
-		isDetected:      false,
+		isDetected:      true,
 		isAuthenticated: true,
 		properties:      nil, // Set properties to nil as it's not used in this case
 	}
