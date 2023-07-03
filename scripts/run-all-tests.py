@@ -36,8 +36,6 @@ os.chdir("tests")
 # List all application tests (all direcrories that are under apps directory)
 app_tests = [d for d in os.listdir("apps") if os.path.isdir(os.path.join("apps", d))]
 
-app_tests = ['postgres']
-
 results = []
 # Run all application tests
 for app_test in app_tests:
