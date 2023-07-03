@@ -120,7 +120,9 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 							result.ApplicationLayer = fmt.Sprintf("%v", applicationDiscoveryResult.Protocol())
 							result.isAuthenticated = applicationDiscoveryResult.GetIsAuthRequired()
 							result.properties = applicationDiscoveryResult.GetProperties()
+							break // Stop checking application layer protocol
 						} else {
+
 						}
 					}
 
@@ -157,7 +159,9 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 						result.ApplicationLayer = fmt.Sprintf("%v", applicationDiscoveryResult.Protocol())
 						result.isAuthenticated = applicationDiscoveryResult.GetIsAuthRequired()
 						result.properties = applicationDiscoveryResult.GetProperties()
+						break
 					} else {
+
 					}
 				}
 			}
