@@ -2,8 +2,11 @@ package applicationlayerdiscovery
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
 )
@@ -58,23 +61,50 @@ func (d *KubeApiServerDiscovery) Discover(sessionHandler servicediscovery.ISessi
 
 	// Check the response status code
 	if resp.StatusCode == http.StatusOK {
-		// Kubernetes API server is detected and not authenticated
-		result := &KubeApiServerDiscoveryResult{
-			isDetected:     true,
-			isAuthRequired: false,
-			properties: map[string]interface{}{
-				"url": url,
-			},
+		// Check if the response body contains the Kubernetes API server version
+		if resp.Header.Get("kind") == "APIVersions" {
+			// Kubernetes API server is detected and not authenticated
+			result := &KubeApiServerDiscoveryResult{
+				isDetected:     true,
+				isAuthRequired: false,
+				properties: map[string]interface{}{
+					"url": url,
+				},
+			}
+			return result, nil
 		}
-		return result, nil
-	} else if resp.StatusCode == http.StatusUnauthorized {
-		// Kubernetes API server is detected and authenticated
-		result := &KubeApiServerDiscoveryResult{
-			isDetected:     true,
-			isAuthRequired: true,
-			properties:     nil,
+	} else if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+		// Tricky here: if the response status is Unauthorized (401) or Forbidden (403), it is not easy to detect API server
+		// authentication is required.
+		// Check if the there is a header containing "kubernetes" string
+
+		// Itterate over all headers
+		for k := range resp.Header {
+			// If the header contains "kubernetes" string
+			if strings.Contains(k, "Kubernetes") {
+				// Check if response is json format and contains "apiVersion" and "kind" fields
+				if resp.Header.Get("Content-Type") == "application/json" {
+					// Convert body to struct
+					body, err := ioutil.ReadAll(resp.Body)
+					if err == nil {
+						var result map[string]interface{}
+						err = json.Unmarshal(body, &result)
+						if err == nil {
+							if result["apiVersion"] != nil && result["kind"] != nil {
+								// Kubernetes API server is detected and authenticated
+								result := &KubeApiServerDiscoveryResult{
+									isDetected:     true,
+									isAuthRequired: true,
+									properties:     nil,
+								}
+								return result, nil
+							}
+						}
+					}
+				}
+			}
 		}
-		return result, nil
+
 	}
 
 	// If the response status is neither OK (200) nor Unauthorized (401), the Kubernetes API server is not detected

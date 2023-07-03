@@ -1,0 +1,13 @@
+[
+    {
+        "applicationlayer": "etcd",
+        "authenticated": true,
+        "host": "etcd-service",
+        "port": 2379,
+        "presentationlayer": "http",
+        "properties": null,
+        "service": "etcd",
+        "sessionlayer": "",
+        "type": "tcp"
+    }
+]

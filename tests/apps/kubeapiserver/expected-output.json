@@ -1,0 +1,13 @@
+[
+    {
+        "applicationlayer": "Kubernetes API server",
+        "authenticated": true,
+        "host": "kubernetes.default.svc.cluster.local",
+        "port": 443,
+        "presentationlayer": "http",
+        "properties": null,
+        "service": "Kubernetes API server",
+        "sessionlayer": "tls",
+        "type": "tcp"
+    }
+]

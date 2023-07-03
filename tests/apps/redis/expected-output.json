@@ -1,0 +1,13 @@
+[
+    {
+        "applicationlayer": "redis",
+        "authenticated": true,
+        "host": "redis-service",
+        "port": 6379,
+        "presentationlayer": "",
+        "service": "redis",
+        "sessionlayer": "",
+        "properties": null,
+        "type": "tcp"
+    }
+]

@@ -139,11 +139,11 @@ kubectl cp ../kubescape-network-scanner bash-pod:/usr/local/bin/kubescape-networ
 kubectl exec -it bash-pod -n $namespace -- kubescape-network-scanner scan --tcp $service_name $service_port --json --output /tmp/output.json || cleanupandexit "failed to run kubescape-network-scanner in the pod"
 
 # Get the output json file from the pod
-kubectl cp bash-pod:/tmp/output.json /tmp/$random_name-output.json -n $namespace || cleanupandexit "failed to copy output.json from the pod"
+kubectl cp bash-pod:/tmp/output.json /tmp/$random_name-output.json -n $namespace |& tee /tmp/$random_name-log.txt || cleanupandexit "failed to copy output.json from the pod"
 
 # Compare the output json file with the expected output json file (ignore whitespace)
-jq . /tmp/$random_name-output.json > /tmp/$random_name-output.json.tmp && mv /tmp/$random_name-output.json.tmp /tmp/$random_name-output.json
-jq . apps/$application_name/expected-output.json > /tmp/$random_name-expected-output.json
+jq -S . /tmp/$random_name-output.json > /tmp/$random_name-output.json.tmp && mv /tmp/$random_name-output.json.tmp /tmp/$random_name-output.json
+jq -S . apps/$application_name/expected-output.json > /tmp/$random_name-expected-output.json
 diff -w /tmp/$random_name-output.json /tmp/$random_name-expected-output.json > /tmp/$random_name-diff.txt
 result=$?
 
@@ -154,6 +154,13 @@ else
     testprint "Test failed" "red"
     testprint "Diff:" "red"
     cat /tmp/$random_name-diff.txt
+    # Print the diff to stderr
+    echo "----------------------------------------" >&2
+    cat /tmp/$random_name-log.txt >&2
+    echo "----------------------------------------" >&2
+    echo "Diff:" >&2
+    cat /tmp/$random_name-diff.txt >&2
+    echo "----------------------------------------" >&2
 fi
 
 # Delete the namespace
