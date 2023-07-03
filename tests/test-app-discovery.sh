@@ -142,8 +142,8 @@ kubectl exec -it bash-pod -n $namespace -- kubescape-network-scanner scan --tcp 
 kubectl cp bash-pod:/tmp/output.json /tmp/$random_name-output.json -n $namespace || cleanupandexit "failed to copy output.json from the pod"
 
 # Compare the output json file with the expected output json file (ignore whitespace)
-jq . /tmp/$random_name-output.json > /tmp/$random_name-output.json.tmp && mv /tmp/$random_name-output.json.tmp /tmp/$random_name-output.json
-jq . apps/$application_name/expected-output.json > /tmp/$random_name-expected-output.json
+jq -S . /tmp/$random_name-output.json > /tmp/$random_name-output.json.tmp && mv /tmp/$random_name-output.json.tmp /tmp/$random_name-output.json
+jq -S . apps/$application_name/expected-output.json > /tmp/$random_name-expected-output.json
 diff -w /tmp/$random_name-output.json /tmp/$random_name-expected-output.json > /tmp/$random_name-diff.txt
 result=$?
 
