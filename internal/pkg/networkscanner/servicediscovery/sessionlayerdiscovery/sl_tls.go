@@ -31,7 +31,7 @@ func (d *TlsSessionDiscovery) Protocol() servicediscovery.TransportProtocol {
 func (d *TlsSessionDiscovery) SessionLayerDiscover(hostAddr string, port int) (servicediscovery.ISessionLayerDiscoveryResult, error) {
 	// Create a dialer with a timeout of 50 ms
 	dialer := net.Dialer{
-		Timeout: 50 * time.Millisecond,
+		Timeout: 180 * time.Millisecond,
 	}
 
 	// Create a TLS config with InsecureSkipVerify set
@@ -68,7 +68,7 @@ func (d *TlsSessionDiscoveryResult) GetSessionHandler() (servicediscovery.ISessi
 func (d *TlsSessionHandler) Connect() error {
 	// Create a dialer with a timeout of 50 ms
 	dialer := net.Dialer{
-		Timeout: 50 * time.Millisecond,
+		Timeout: 180 * time.Millisecond,
 	}
 
 	// Create a TLS config with InsecureSkipVerify set
