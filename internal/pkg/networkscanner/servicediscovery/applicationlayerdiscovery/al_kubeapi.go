@@ -41,7 +41,6 @@ func (d *KubeApiServerDiscovery) Protocol() string {
 }
 
 func (d *KubeApiServerDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler, presentationLayerDiscoveryResult servicediscovery.IPresentationDiscoveryResult) (servicediscovery.IApplicationDiscoveryResult, error) {
-
 	url := fmt.Sprintf("https://%s:%d/api", sessionHandler.GetHost(), sessionHandler.GetPort())
 
 	// Create a custom transport with insecure skip verify
@@ -74,37 +73,32 @@ func (d *KubeApiServerDiscovery) Discover(sessionHandler servicediscovery.ISessi
 			return result, nil
 		}
 	} else if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
-		// Tricky here: if the response status is Unauthorized (401) or Forbidden (403), it is not easy to detect API server
-		// authentication is required.
-		// Check if the there is a header containing "kubernetes" string
+		// Check if the response is in JSON format
+		contentType := resp.Header.Get("Content-Type")
+		if strings.HasPrefix(contentType, "application/json") {
+			// Convert body to struct
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return nil, fmt.Errorf("failed to read response body: %v", err)
+			}
 
-		// Itterate over all headers
-		for k := range resp.Header {
-			// If the header contains "kubernetes" string
-			if strings.Contains(k, "Kubernetes") {
-				// Check if response is json format and contains "apiVersion" and "kind" fields
-				if resp.Header.Get("Content-Type") == "application/json" {
-					// Convert body to struct
-					body, err := ioutil.ReadAll(resp.Body)
-					if err == nil {
-						var result map[string]interface{}
-						err = json.Unmarshal(body, &result)
-						if err == nil {
-							if result["apiVersion"] != nil && result["kind"] != nil {
-								// Kubernetes API server is detected and authenticated
-								result := &KubeApiServerDiscoveryResult{
-									isDetected:     true,
-									isAuthRequired: true,
-									properties:     nil,
-								}
-								return result, nil
-							}
-						}
-					}
+			var responseJSON map[string]interface{}
+			err = json.Unmarshal(body, &responseJSON)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse JSON response: %v", err)
+			}
+
+			kind, ok := responseJSON["kind"].(string)
+			if ok && kind == "Status" {
+				// Kubernetes API server is detected and authenticated
+				result := &KubeApiServerDiscoveryResult{
+					isDetected:     true,
+					isAuthRequired: true,
+					properties:     nil,
 				}
+				return result, nil
 			}
 		}
-
 	}
 
 	// If the response status is neither OK (200) nor Unauthorized (401), the Kubernetes API server is not detected
