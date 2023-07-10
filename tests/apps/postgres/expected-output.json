@@ -1,1 +1,13 @@
-[{"applicationlayer":"postgresql","authenticated":true,"host":"postgres-service","port":5432,"presentationlayer":"","service":"postgresql","sessionlayer":"no_session_layer","type":"tcp"}]
+[
+    {
+        "applicationlayer": "postgresql",
+        "authenticated": true,
+        "host": "postgres-service",
+        "port": 5432,
+        "presentationlayer": "",
+        "properties": null,
+        "service": "postgresql",
+        "sessionlayer": "",
+        "type": "tcp"
+    }
+]
