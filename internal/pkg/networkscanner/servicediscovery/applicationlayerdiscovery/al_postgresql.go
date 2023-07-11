@@ -3,6 +3,7 @@ package applicationlayerdiscovery
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	_ "github.com/lib/pq"
 
@@ -40,30 +41,37 @@ func (d *PostgresDiscovery) Protocol() string {
 
 func (d *PostgresDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler, presentationLayerDiscoveryResult servicediscovery.IPresentationDiscoveryResult) (servicediscovery.IApplicationDiscoveryResult, error) {
 	// Set a timeout of 50 ms
-	db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d sslmode=disable connect_timeout=5", sessionHandler.GetHost(), sessionHandler.GetPort()))
+	db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d user=admin password=\"123456\" sslmode=disable connect_timeout=5", sessionHandler.GetHost(), sessionHandler.GetPort()))
 	if err != nil {
+		fmt.Printf("failed to connect to PostgreSQL server: %v\n", err)
 		return nil, fmt.Errorf("failed to connect to PostgreSQL server: %v", err)
 	}
 	defer db.Close()
 
 	// Here: we know it is postgresql, but we don't know if it is authenticated or not
 	result := &PostgresDiscoveryResult{
-		isDetected:      false,
+		isDetected:      true,
 		isAuthenticated: true,
 		properties:      nil, // Set properties to nil as it's not used in this case
 	}
 
-	// Use the connection to query the PostgreSQL server for its version
-	var version string
-	err = db.QueryRow("SELECT version()").Scan(&version)
+	// Test the connection
+	err = db.Ping()
 	if err != nil {
-		return result, nil
-	} else {
-		result.isAuthenticated = false
-		result.properties = map[string]interface{}{
-			"version": version,
+		if strings.Contains(err.Error(), "authentication failed") {
+			result.isDetected = true
+			result.isAuthenticated = true
+		} else if strings.Contains(err.Error(), "role \"admin\" does not exist") {
+			// We need this case to detect that we are using an user that does not exist but still it is unauthenticated
+			result.isDetected = true
+			result.isAuthenticated = false
+		} else {
+			result.isDetected = false
+			result.isAuthenticated = false
 		}
-		return result, nil
+	} else {
+		result.isDetected = true
+		result.isAuthenticated = false
 	}
-
+	return result, nil
 }
