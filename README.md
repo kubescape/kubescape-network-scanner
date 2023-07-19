@@ -1,44 +1,10 @@
-# kubescape-network-scanner
-Network scan and service discovery package
+# Kubescape-network-scanner
+A network and service discovery package in golang for scanning networks inside kubernetes clusters and finding hidden services. This project is an extension of the Kubescape platform and aims to provide comprehensive network scanning capabilities within Kubernetes environments.
 
-## Basic network package
+## Key Features
+- **No Port Mapping Approach**: Unlike traditional scanners, Kubescape Network Scanner does not rely on port mapping for service discovery. It can uncover hidden services running on different ports, providing a more comprehensive scanning experience.
 
-See the network scanner and service discovery package and service discovery [here](internal/pkg/network-scanner/).
+- **Discover Hidden Services**: Kubescape Network Scanner excels at finding hidden services that may go unnoticed by other scanners, enabling you to identify potential blind spots within your Kubernetes clusters.
 
-The main interface is defined in [interface.go](internal/pkg/network-scanner/interface.go)
+- **Authentication Check and Exposed Services Detection**: Kubescape Network Scanner allows you to verify if services are properly authenticated and provides insights into exposed services, helping you mitigate potential risks proactively.
 
-There are several constants defined for target types, port types, and authentication status. These constants are used to specify the type of target (IP, IP list, IP range, hostname), the type of port (single, list, range), and the authentication status (authenticated, unauthenticated, partially authenticated) respectively.
-
-The TargetDescription struct defines the targets of the network scanner. It has fields to specify the target type, list of IP addresses, IP range start and end, hostname, port type, and ports or port range start and end. It also has fields to specify whether to scan TCP ports, UDP ports, or both.
-
-The ScanResult struct defines the results of the network scan. It has fields to specify the IP address, port number, service name, authentication status, and whether the connection is secure (TLS/SSL).
-
-The NetworkScanner interface defines a method Scan that takes a TargetDescription argument and returns an array of ScanResult and an error. The Scan method should perform a network scan and return an array of ScanResult for all open ports and their associated services.
-
-
-## Protocol and service discovery capabilities
-
-### Transport layer
-
-Support TCP/UDP
-
-### Session layer
-
-Supporting the discovery of TLS/SSL, we plan to support SSH in the future
-
-### Presenation layer
-
-Support of HTTP
-
-### Application
-
-* Kubernetes API server (needs testing)
-* Kubelet 
-* ETCD
-* Postgres - support detection of authentication enabled
-* MySQL/MariaDB
-* Kafka (testing)
-* Elasticsearch - need development
-* Redis - need development
-* Casandra - need development
-* 
