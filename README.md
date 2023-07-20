@@ -52,3 +52,9 @@ Kubescape network scanner is currently able to support following services:
 ### Transport Layer
 - tcp
 - udp
+
+## Contribution and Future Enhancements
+We welcome contributions from the community to improve and expand Kubescape Network Scanner. Some of our planned future enhancements include:
+- Integration with Kubescape and the larger Kubernetes ecosystem for more extensive coverage and functionality.
+- Enhanced vulnerability scanning, including detection of weak credentials, identifying version vulnerabilities, and exploring other potential security risks.
+- Providing more detailed output in reports, including attack scope if a service is compromised, and actionable suggestions to strengthen security measures.
