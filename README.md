@@ -34,4 +34,21 @@ Kubescape Network Scanner utilizes the OSI model as a framework for understandin
 
 ![image](https://github.com/0xquark/kubescape-network-scanner/assets/84588720/6c023eb7-2e99-45d1-b7fb-53ddec8ffc81)
 
+Kubescape network scanner is currently able to support following services: 
+### Application Layer:
+- Etcd
+- Kubernetes Api Server
+- Postgres
+- Redis
+- Elastic search
 
+### Presentation Layer
+- http
+- gRPC ( In Development )
+
+### Session Layer
+- tls
+
+### Transport Layer
+- tcp
+- udp
