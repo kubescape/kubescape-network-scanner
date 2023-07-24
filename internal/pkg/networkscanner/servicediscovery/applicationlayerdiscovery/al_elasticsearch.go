@@ -59,6 +59,16 @@ func (d *ElasticsearchDiscovery) Discover(sessionHandler servicediscovery.ISessi
 			return nil, fmt.Errorf("failed to read response body: %v", err)
 		}
 
+		if strings.Contains(string(body), "MongoDB") {
+			// If the response contains "MongoDB," set isDetected to false and return the result
+			result := &ElasticsearchDiscoveryResult{
+				isDetected:      false,
+				isAuthenticated: false,
+				properties:      nil,
+			}
+			return result, nil
+		}
+
 		result := &ElasticsearchDiscoveryResult{
 			isDetected:      true,
 			isAuthenticated: false, // Set to true if authentication is required
