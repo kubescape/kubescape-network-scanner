@@ -41,10 +41,10 @@ results = []
 for app_test in app_tests:
     # Call the test-app-discovery.sh script, capture the output and return code using subprocess.check_output
     # and save output to a variable
-    
+
     try:
         p = subprocess.run(["./test-app-discovery.sh", app_test],check=True, stderr=subprocess.PIPE)
-        stderr = ""
+        stderr = p.stderr.decode("utf-8")
         result = True
     except subprocess.CalledProcessError as e:
         stderr = e.stderr.decode("utf-8")

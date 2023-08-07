@@ -5,7 +5,7 @@
 # Clean-up and exit function
 function cleanupandexit() {
     # Print error message (first argument)
-    testprint "$1" "red"
+    testprint "$1 - $2" "red"
     # Delete the namespace
     kubectl delete namespace $namespace
     exit 1
@@ -61,6 +61,8 @@ fi
 
 application_name=$1
 
+testprint "[INFO] Testing application $application_name" "white"
+
 # Check if application exists
 if [ ! -d "apps/$application_name" ]; then
     testprint "Application $application_name does not exist" "red"
@@ -98,12 +100,21 @@ namespace="test-$random_name"
 # Create a namespace
 kubectl create namespace $namespace || exit 1
 
+# Print out the namespace and the service account
+kubectl get serviceaccount -n $namespace
+
+
 # If app.yaml exists, apply it
 if [ ! -z "$APP_YAML" ]; then
     # Apply app.yaml
-    kubectl apply -f $APP_YAML -n $namespace || cleanupandexit "failed to apply app.yaml"
+    kubectl apply -f $APP_YAML -n $namespace || cleanupandexit $application_name "failed to apply app.yaml"
     # Wait for the application to be ready
-    kubectl wait --for=condition=ready pod -l app=$application_name -n $namespace || cleanupandexit "application is not ready after 5 minutes"
+    kubectl wait --for=condition=ready pod -l app=$application_name -n $namespace
+    # Check result
+    if [ $? -ne 0 ]; then
+        kubectl describe pods -n $namespace -l app=$application_name
+        cleanupandexit $application_name "application is not ready after 5 minutes"
+    fi
 fi
 
 # If config.yaml exists, get service name and port from it
@@ -122,24 +133,36 @@ fi
 
 # Make sure that service name and port are not empty
 if [ -z "$service_name" ] || [ -z "$service_port" ]; then
-    cleanupandexit "service name or port is empty"
+    cleanupandexit $application_name "service name or port is empty"
 fi
 
 # Create a test pod in the same namespace
-kubectl -n $namespace run bash-pod --image=bash:latest --restart=Never --command -- sleep infinity || cleanupandexit "failed to create test pod"
+# retry 5 times with 1 second sleep
+success=false
+for i in {1..5}; do
+    kubectl -n $namespace run bash-pod --image=bash:latest --restart=Never --command -- sleep infinity
+    if [ $? -eq 0 ]; then
+        success=true
+        break
+    fi
+    sleep 1
+done
+$success || cleanupandexit $application_name "failed to create test pod"
 
 # Wait for the pod to be ready
-kubectl wait --for=condition=ready pod -l run=bash-pod -n $namespace || cleanupandexit "test pod is not ready after 5 minutes"
+kubectl wait --for=condition=ready pod -l run=bash-pod -n $namespace || cleanupandexit $application_name "test pod is not ready after 5 minutes"
 
 # Copy the kubescape-network-scanner binary to the pod
-kubectl cp ../kubescape-network-scanner bash-pod:/usr/local/bin/kubescape-network-scanner -n $namespace || cleanupandexit "failed to copy kubescape-network-scanner to the pod"
+kubectl cp ../kubescape-network-scanner bash-pod:/usr/local/bin/kubescape-network-scanner -n $namespace || cleanupandexit $application_name "failed to copy kubescape-network-scanner to the pod"
 
+testprint "Service name: $service_name" "white"
+kubectl -n $namespace get service -o wide
 
 # Run the kubescape-network-scanner binary in the pod
-kubectl exec -it bash-pod -n $namespace -- kubescape-network-scanner scan --tcp $service_name $service_port --json --output /tmp/output.json || cleanupandexit "failed to run kubescape-network-scanner in the pod"
+kubectl exec bash-pod -n $namespace -- kubescape-network-scanner scan --tcp $service_name $service_port --json --output /tmp/output.json || cleanupandexit $application_name "failed to run kubescape-network-scanner in the pod"
 
 # Get the output json file from the pod
-kubectl cp bash-pod:/tmp/output.json /tmp/$random_name-output.json -n $namespace |& tee /tmp/$random_name-log.txt || cleanupandexit "failed to copy output.json from the pod"
+kubectl cp bash-pod:/tmp/output.json /tmp/$random_name-output.json -n $namespace |& tee /tmp/$random_name-log.txt || cleanupandexit $application_name "failed to copy output.json from the pod"
 
 # Compare the output json file with the expected output json file (ignore whitespace)
 jq -S . /tmp/$random_name-output.json > /tmp/$random_name-output.json.tmp && mv /tmp/$random_name-output.json.tmp /tmp/$random_name-output.json
@@ -149,7 +172,7 @@ result=$?
 
 # If successful, result will be 0 and print out success message, if not, print out failure message
 if [ $result -eq 0 ]; then
-    testprint "Test passed successfully" "green"
+    testprint "Test $application_name passed successfully" "green"
 else
     testprint "Test failed" "red"
     testprint "Diff:" "red"
