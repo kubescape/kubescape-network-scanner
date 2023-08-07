@@ -61,6 +61,8 @@ fi
 
 application_name=$1
 
+testprint "Testing application $application_name" "white"
+
 # Check if application exists
 if [ ! -d "apps/$application_name" ]; then
     testprint "Application $application_name does not exist" "red"
