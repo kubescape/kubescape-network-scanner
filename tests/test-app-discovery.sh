@@ -133,7 +133,16 @@ if [ -z "$service_name" ] || [ -z "$service_port" ]; then
 fi
 
 # Create a test pod in the same namespace
-kubectl -n $namespace run bash-pod --image=bash:latest --restart=Never --command -- sleep infinity || cleanupandexit $application_name "failed to create test pod"
+# retry 5 times with 1 second sleep
+success=false
+for i in {1..5}; do
+    kubectl -n $namespace run bash-pod --image=bash:latest --restart=Never --command -- sleep infinity || cleanupandexit $application_name "failed to create test pod"
+    if [ $? -eq 0 ]; then
+        success=true
+        break
+    fi
+done
+$success || cleanupandexit $application_name "failed to create test pod"
 
 # Wait for the pod to be ready
 kubectl wait --for=condition=ready pod -l run=bash-pod -n $namespace || cleanupandexit $application_name "test pod is not ready after 5 minutes"
@@ -143,7 +152,7 @@ kubectl cp ../kubescape-network-scanner bash-pod:/usr/local/bin/kubescape-networ
 
 
 # Run the kubescape-network-scanner binary in the pod
-kubectl exec -it bash-pod -n $namespace -- kubescape-network-scanner scan --tcp $service_name $service_port --json --output /tmp/output.json || cleanupandexit $application_name "failed to run kubescape-network-scanner in the pod"
+kubectl exec bash-pod -n $namespace -- kubescape-network-scanner scan --tcp $service_name $service_port --json --output /tmp/output.json || cleanupandexit $application_name "failed to run kubescape-network-scanner in the pod"
 
 # Get the output json file from the pod
 kubectl cp bash-pod:/tmp/output.json /tmp/$random_name-output.json -n $namespace |& tee /tmp/$random_name-log.txt || cleanupandexit $application_name "failed to copy output.json from the pod"
