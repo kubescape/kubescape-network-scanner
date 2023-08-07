@@ -100,6 +100,10 @@ namespace="test-$random_name"
 # Create a namespace
 kubectl create namespace $namespace || exit 1
 
+# Print out the namespace and the service account
+kubectl get serviceaccount -n $namespace
+
+
 # If app.yaml exists, apply it
 if [ ! -z "$APP_YAML" ]; then
     # Apply app.yaml
@@ -136,11 +140,12 @@ fi
 # retry 5 times with 1 second sleep
 success=false
 for i in {1..5}; do
-    kubectl -n $namespace run bash-pod --image=bash:latest --restart=Never --command -- sleep infinity || cleanupandexit $application_name "failed to create test pod"
+    kubectl -n $namespace run bash-pod --image=bash:latest --restart=Never --command -- sleep infinity
     if [ $? -eq 0 ]; then
         success=true
         break
     fi
+    sleep 1
 done
 $success || cleanupandexit $application_name "failed to create test pod"
 
@@ -150,6 +155,8 @@ kubectl wait --for=condition=ready pod -l run=bash-pod -n $namespace || cleanupa
 # Copy the kubescape-network-scanner binary to the pod
 kubectl cp ../kubescape-network-scanner bash-pod:/usr/local/bin/kubescape-network-scanner -n $namespace || cleanupandexit $application_name "failed to copy kubescape-network-scanner to the pod"
 
+testprint "Service name: $service_name" "white"
+kubectl -n $namespace get service -o wide
 
 # Run the kubescape-network-scanner binary in the pod
 kubectl exec bash-pod -n $namespace -- kubescape-network-scanner scan --tcp $service_name $service_port --json --output /tmp/output.json || cleanupandexit $application_name "failed to run kubescape-network-scanner in the pod"
