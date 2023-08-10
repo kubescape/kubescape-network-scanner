@@ -22,10 +22,10 @@ var ApplicationDiscoveryList = []ApplicationDiscoveryListItem{
 		Discovery:  &ElasticsearchDiscovery{},
 		Reqirement: string(servicediscovery.TCP),
 	},
-	//{
-	//	Discovery:  &MysqlDiscovery{},
-	//	Reqirement: string(servicediscovery.TCP),
-	//},
+	{
+		Discovery:  &MysqlDiscovery{},
+		Reqirement: string(servicediscovery.TCP),
+	},
 	{
 		Discovery:  &PostgresDiscovery{},
 		Reqirement: string(servicediscovery.TCP),

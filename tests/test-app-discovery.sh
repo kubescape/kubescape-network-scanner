@@ -158,6 +158,9 @@ kubectl cp ../kubescape-network-scanner bash-pod:/usr/local/bin/kubescape-networ
 testprint "Service name: $service_name" "white"
 kubectl -n $namespace get service -o wide
 
+echo "Waiting for the service to be online 5 seconds"
+sleep 5
+
 # Run the kubescape-network-scanner binary in the pod
 kubectl exec bash-pod -n $namespace -- kubescape-network-scanner scan --tcp $service_name $service_port --json --output /tmp/output.json || cleanupandexit $application_name "failed to run kubescape-network-scanner in the pod"
 

@@ -7,7 +7,7 @@
         "presentationlayer": "http",
         "properties": null,
         "service": "mongodb",
-        "sessionlayer": "",
+        "sessionlayer": "tcp",
         "type": "tcp"
     }
 ]

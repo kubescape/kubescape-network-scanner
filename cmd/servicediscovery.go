@@ -88,8 +88,11 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 
 			// Process presentation layer discovery results
 			var presentationDiscoveryResult presentationLayerDiscoveryResult
+			didFindPresentationLayer := false
 			for presentationDiscoveryResult = range presentationLayerChan {
 				if presentationDiscoveryResult.GetIsDetected() {
+					didFindPresentationLayer = true
+
 					result.PresentationLayer = fmt.Sprintf("%v", presentationDiscoveryResult.Protocol())
 
 					// Discover application layer protocols concurrently
@@ -129,8 +132,7 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 					break // Stop checking presentation layer protocols
 				}
 			}
-
-			if presentationDiscoveryResult == nil {
+			if !didFindPresentationLayer {
 				// Continue to discover application layer protocols
 				applicationLayerChan := make(chan applicationLayerDiscoveryResult)
 				for _, applicationDiscoveryItem := range applicationlayerdiscovery.ApplicationDiscoveryList {
