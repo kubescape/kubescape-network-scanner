@@ -46,6 +46,13 @@ then
     exit 1
 fi
 
+# Check if jq is available
+if ! command -v jq &> /dev/null
+then
+    testprint "jq could not be found" "red"
+    exit 1
+fi
+
 # Check if kubernetes is running
 if ! kubectl cluster-info &> /dev/null
 then

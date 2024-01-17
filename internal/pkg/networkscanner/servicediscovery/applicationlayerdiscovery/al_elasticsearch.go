@@ -2,7 +2,7 @@ package applicationlayerdiscovery
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -54,7 +54,7 @@ func (d *ElasticsearchDiscovery) Discover(sessionHandler servicediscovery.ISessi
 
 	// Check the response status code
 	if response.StatusCode == http.StatusOK {
-		body, err := ioutil.ReadAll(response.Body)
+		body, err := io.ReadAll(response.Body)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read response body: %v", err)
 		}

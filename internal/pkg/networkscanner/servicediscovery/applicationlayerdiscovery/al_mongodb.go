@@ -44,6 +44,7 @@ func (d *MongoDBDiscovery) Discover(sessionHandler servicediscovery.ISessionHand
 	clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%d", sessionHandler.GetHost(), sessionHandler.GetPort()))
 	ctx := context.Background()
 	client, err := mongo.Connect(ctx, clientOptions)
+	defer client.Disconnect(ctx)
 	if err != nil {
 		fmt.Printf("failed to connect to MongoDB server: %v\n", err)
 		return nil, fmt.Errorf("failed to connect to MongoDB server: %v", err)
@@ -63,7 +64,7 @@ func (d *MongoDBDiscovery) Discover(sessionHandler servicediscovery.ISessionHand
 	}
 
 	// Get MongoDB server version
-	serverStatusCmd := bson.D{{"serverStatus", 1}, {"recordStats", 0}}
+	serverStatusCmd := bson.D{{Key: "serverStatus", Value: 1}, {Key: "recordStats", Value: 0}}
 	serverStatusResult := client.Database("admin").RunCommand(ctx, serverStatusCmd)
 	if serverStatusResult.Err() == nil {
 		var resultDoc bson.D
@@ -83,6 +84,5 @@ func (d *MongoDBDiscovery) Discover(sessionHandler servicediscovery.ISessionHand
 		fmt.Printf("failed to retrieve server status: %v\n", serverStatusResult.Err())
 	}
 
-	client.Disconnect(ctx)
 	return result, nil
 }
