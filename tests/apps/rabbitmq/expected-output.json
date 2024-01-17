@@ -1,0 +1,13 @@
+[
+    {
+        "applicationlayer": "rabbitmq",
+        "authenticated": true,
+        "host": "rabbitmq-service",
+        "port": 5672,
+        "presentationlayer": "",
+        "properties": null,
+        "service": "rabbitmq",
+        "sessionlayer": "",
+        "type": "tcp"
+    }
+]

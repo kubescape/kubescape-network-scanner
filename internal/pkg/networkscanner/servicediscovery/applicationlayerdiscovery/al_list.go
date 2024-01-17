@@ -42,4 +42,8 @@ var ApplicationDiscoveryList = []ApplicationDiscoveryListItem{
 		Discovery:  &MongoDBDiscovery{},
 		Reqirement: string(servicediscovery.TCP),
 	},
+	{
+		Discovery:  &RabbitMQDiscovery{},
+		Reqirement: string(servicediscovery.TCP),
+	},
 }
