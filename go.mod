@@ -8,7 +8,7 @@ require (
 	github.com/spf13/cobra v1.7.0
 	github.com/streadway/amqp v1.1.0
 	go.etcd.io/etcd/client/v3 v3.5.11
-	go.mongodb.org/mongo-driver v1.12.0
+	go.mongodb.org/mongo-driver v1.13.1
 )
 
 require (
