@@ -57,7 +57,7 @@ func (d *RabbitMQDiscovery) Discover(sessionHandler servicediscovery.ISessionHan
 
 	// Check if the connection is authenticated
 	isAuthenticated := false
-	if conn.IsClosed() == false {
+	if !conn.IsClosed() {
 		isAuthenticated = true
 	}
 
