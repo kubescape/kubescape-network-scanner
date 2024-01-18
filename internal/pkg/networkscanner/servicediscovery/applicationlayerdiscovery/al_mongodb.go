@@ -50,7 +50,7 @@ func (d *MongoDBDiscovery) Discover(sessionHandler servicediscovery.ISessionHand
 		return nil, fmt.Errorf("failed to connect to MongoDB server: %v", err)
 	}
 
-	// Here: we know it is MongoDB, but we don't know if it is authenticated or not
+	// Here: we know it is MongoDB, but we don't know if it's authenticated or not.
 	result := &MongoDBDiscoveryResult{
 		isDetected:      true,
 		isAuthenticated: true,
@@ -70,13 +70,20 @@ func (d *MongoDBDiscovery) Discover(sessionHandler servicediscovery.ISessionHand
 		var resultDoc bson.D
 		err = serverStatusResult.Decode(&resultDoc)
 		if err == nil {
-			version, _ := resultDoc.Map()["version"].(string)
-			host, _ := resultDoc.Map()["host"].(string)
-			result.isAuthenticated = false
-			result.properties = map[string]interface{}{
-				"host":    host,
-				"version": version,
+			bsonBytes, _ := bson.MarshalExtJSON(resultDoc, false, false)
+			var resultDocMap map[string]interface{}
+			err = bson.UnmarshalExtJSON(bsonBytes, false, &resultDocMap)
+			if err == nil {
+				version := resultDocMap["version"].(string)
+				host := resultDocMap["host"].(string)
+				result.properties = map[string]interface{}{
+					"version": version,
+					"host":    host,
+				}
+			} else {
+				fmt.Printf("failed to decode server status result: %v\n", err)
 			}
+			result.isAuthenticated = false
 		} else {
 			fmt.Printf("failed to decode server status result: %v\n", err)
 		}
