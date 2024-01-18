@@ -1,6 +1,6 @@
 module github.com/kubescape/kubescape-network-scanner
 
-go 1.19
+go 1.20
 
 require (
 	github.com/go-redis/redis/v8 v8.11.5
