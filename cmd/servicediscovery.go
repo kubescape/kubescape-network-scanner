@@ -130,7 +130,7 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 				}
 			}
 
-			if presentationDiscoveryResult == nil {
+			if presentationDiscoveryResult == nil || !presentationDiscoveryResult.GetIsDetected() {
 				// Continue to discover application layer protocols
 				applicationLayerChan := make(chan applicationLayerDiscoveryResult)
 				for _, applicationDiscoveryItem := range applicationlayerdiscovery.ApplicationDiscoveryList {

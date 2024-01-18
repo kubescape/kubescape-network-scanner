@@ -163,6 +163,7 @@ kubectl wait --for=condition=ready pod -l run=bash-pod -n $namespace || cleanupa
 kubectl cp ../kubescape-network-scanner bash-pod:/usr/local/bin/kubescape-network-scanner -n $namespace || cleanupandexit $application_name "failed to copy kubescape-network-scanner to the pod"
 
 testprint "Service name: $service_name" "white"
+testprint "Service port: $service_port" "white"
 kubectl -n $namespace get service -o wide
 
 # Run the kubescape-network-scanner binary in the pod

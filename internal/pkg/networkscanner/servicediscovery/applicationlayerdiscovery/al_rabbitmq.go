@@ -2,6 +2,7 @@ package applicationlayerdiscovery
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
 	"github.com/streadway/amqp"
@@ -9,8 +10,6 @@ import (
 
 const (
 	RabbitMQProtocolName = "rabbitmq"
-	DefaultUserName      = "guest"
-	DefaultPassword      = "guest"
 )
 
 type RabbitMQDiscoveryResult struct {
@@ -43,22 +42,18 @@ func (d *RabbitMQDiscovery) Protocol() string {
 }
 
 func (d *RabbitMQDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler, presentationLayerDiscoveryResult servicediscovery.IPresentationDiscoveryResult) (servicediscovery.IApplicationDiscoveryResult, error) {
-	conn, err := amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s:%d", DefaultUserName, DefaultPassword, sessionHandler.GetHost(), sessionHandler.GetPort()))
+	connectionString := fmt.Sprintf("amqp://%s:%d", sessionHandler.GetHost(), sessionHandler.GetPort())
+	conn, err := amqp.Dial(connectionString)
 	if err != nil {
-		// If there is an error connecting to RabbitMQ
-		result := &RabbitMQDiscoveryResult{
-			isDetected:      false,
-			isAuthenticated: false,
-			properties:      nil,
-		}
-		return result, nil
+		log.Printf("failed to connect to RabbitMQ server: %v\n", err)
+		return nil, err
 	}
 	defer conn.Close()
 
 	// Check if the connection is authenticated
-	isAuthenticated := false
+	isAuthenticated := true
 	if !conn.IsClosed() {
-		isAuthenticated = true
+		isAuthenticated = false
 	}
 
 	// Create RabbitMQ discovery result
