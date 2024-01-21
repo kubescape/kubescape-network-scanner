@@ -116,6 +116,8 @@ if [ ! -z "$APP_YAML" ]; then
     # Apply app.yaml
     kubectl apply -f $APP_YAML -n $namespace || cleanupandexit $application_name "failed to apply app.yaml"
     # Wait for the application to be ready
+    sleep 5
+    # Wait for the application to be ready
     kubectl wait --for=condition=ready pod -l app=$application_name -n $namespace
     # Check result
     if [ $? -ne 0 ]; then
