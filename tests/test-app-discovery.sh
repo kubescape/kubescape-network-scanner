@@ -121,8 +121,8 @@ if [ ! -z "$APP_YAML" ]; then
 
     # Loop through each pod and wait for it to be ready
     for pod_name in $pod_names; do
-        # Check if pod is cassandra or kafka we need to wait for 1 minute for it to be ready.
-        if [[ $pod_name == *"cassandra"* ]] || [[ $pod_name == *"kafka"* ]]; then
+        # Check if pod is cassandra we need to wait for 1 minute for it to be ready.
+        if [[ $pod_name == *"cassandra"* ]]; then
             sleep 120
         fi
     done
