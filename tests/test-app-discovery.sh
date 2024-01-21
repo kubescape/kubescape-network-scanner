@@ -127,13 +127,7 @@ if [ ! -z "$APP_YAML" ]; then
         fi
     done
 
-    kubectl wait --for=condition=ready pod -l app=$application_name -n $namespace
-
-    # Check result
-    if [ $? -ne 0 ]; then
-        kubectl describe pods -n $namespace -l app=$application_name
-        cleanupandexit $application_name "application is not ready after 5 minutes"
-    fi
+    kubectl wait --for=condition=ready pod -l app=$application_name -n $namespace --timeout=5m || cleanupandexit $application_name "application is not ready after 5 minutes"
 fi
 
 # If config.yaml exists, get service name and port from it
