@@ -1,0 +1,13 @@
+[
+    {
+        "applicationlayer": "cassandra",
+        "authenticated": true,
+        "host": "cassandra-service",
+        "port": 9042,
+        "presentationlayer": "",
+        "properties": null,
+        "service": "cassandra",
+        "sessionlayer": "tcp",
+        "type": "tcp"
+    }
+]

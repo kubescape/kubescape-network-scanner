@@ -58,7 +58,7 @@ func (d *RedisDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 		// Even if there is an error, we can still detect Redis
 		result := &RedisDiscoveryResult{
 			isDetected:      false,
-			isAuthenticated: false,
+			isAuthenticated: true,
 			properties:      nil, // Set properties to nil as it's not used in this case
 		}
 		return result, nil
@@ -71,7 +71,7 @@ func (d *RedisDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 	// Redis connection successful, populate properties if needed
 	result := &RedisDiscoveryResult{
 		isDetected:      true,
-		isAuthenticated: true,
+		isAuthenticated: false,
 		properties:      nil, // Set properties to nil as it's not used in this case
 	}
 

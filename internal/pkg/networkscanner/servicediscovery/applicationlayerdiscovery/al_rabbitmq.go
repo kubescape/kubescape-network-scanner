@@ -2,7 +2,6 @@ package applicationlayerdiscovery
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
 	"github.com/streadway/amqp"
@@ -45,8 +44,11 @@ func (d *RabbitMQDiscovery) Discover(sessionHandler servicediscovery.ISessionHan
 	connectionString := fmt.Sprintf("amqp://%s:%d", sessionHandler.GetHost(), sessionHandler.GetPort())
 	conn, err := amqp.Dial(connectionString)
 	if err != nil {
-		log.Printf("failed to connect to RabbitMQ server: %v\n", err)
-		return nil, err
+		return &RabbitMQDiscoveryResult{
+			isDetected:      false,
+			isAuthenticated: true,
+			properties:      nil, // Set properties to nil as it's not used in this case
+		}, nil
 	}
 	defer conn.Close()
 

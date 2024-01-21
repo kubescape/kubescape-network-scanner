@@ -46,8 +46,11 @@ func (d *MongoDBDiscovery) Discover(sessionHandler servicediscovery.ISessionHand
 	client, err := mongo.Connect(ctx, clientOptions)
 	defer client.Disconnect(ctx)
 	if err != nil {
-		fmt.Printf("failed to connect to MongoDB server: %v\n", err)
-		return nil, fmt.Errorf("failed to connect to MongoDB server: %v", err)
+		return &MongoDBDiscoveryResult{
+			isDetected:      false,
+			isAuthenticated: true,
+			properties:      nil, // Set properties to nil as it's not used in this case
+		}, nil
 	}
 
 	// Here: we know it is MongoDB, but we don't know if it's authenticated or not.

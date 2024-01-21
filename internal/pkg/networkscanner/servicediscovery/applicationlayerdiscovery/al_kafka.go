@@ -2,7 +2,6 @@ package applicationlayerdiscovery
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
 
@@ -51,7 +50,6 @@ func (k *KafkaDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 	// Create a new SyncProducer
 	_, err := sarama.NewSyncProducer(brokerList, config)
 	if err != nil {
-		log.Printf("failed to connect to Kafka server: %v\n", err)
 		return &KafkaDiscoveryResult{
 			isDetected:      false,
 			isAuthenticated: true,

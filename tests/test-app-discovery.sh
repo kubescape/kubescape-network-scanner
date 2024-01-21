@@ -115,10 +115,15 @@ kubectl get serviceaccount -n $namespace
 if [ ! -z "$APP_YAML" ]; then
     # Apply app.yaml
     kubectl apply -f $APP_YAML -n $namespace || cleanupandexit $application_name "failed to apply app.yaml"
-    # Wait for the application to be ready
-    sleep 5
-    # Wait for the application to be ready
-    kubectl wait --for=condition=ready pod -l app=$application_name -n $namespace
+
+    # Get the list of pod names in the namespace
+    pod_names=$(kubectl get pods -n $namespace -o jsonpath='{.items[*].metadata.name}')
+
+    # Loop through each pod and wait for it to be ready
+    for pod_name in $pod_names; do
+        kubectl wait --for=condition=Ready pod/$pod_name -n $namespace --timeout=300s
+    done
+
     # Check result
     if [ $? -ne 0 ]; then
         kubectl describe pods -n $namespace -l app=$application_name
@@ -175,9 +180,6 @@ kubectl exec bash-pod -n $namespace -- kubescape-network-scanner scan --tcp $ser
 # Get the output json file from the pod
 kubectl cp bash-pod:/tmp/output.json /tmp/$random_name-output.json -n $namespace 2>&1 | tee /tmp/$random_name-log.txt || cleanupandexit $application_name "failed to copy output.json from the pod"
 
-# Compare the output json file with the expected output json file (ignore whitespace)
-#jq -S . /tmp/$random_name-output.json > /tmp/$random_name-output.json.tmp && mv /tmp/$random_name-output.json.tmp /tmp/$random_name-output.json
-#jq -S . apps/$application_name/expected-output.json > /tmp/$random_name-expected-output.json
 # Compare the output json file with the expected output json file (ignore whitespace and "properties" field)
 jq --sort-keys -S 'map(.properties |= {})' /tmp/$random_name-output.json > /tmp/$random_name-output.json.tmp \
   && mv /tmp/$random_name-output.json.tmp /tmp/$random_name-output.json

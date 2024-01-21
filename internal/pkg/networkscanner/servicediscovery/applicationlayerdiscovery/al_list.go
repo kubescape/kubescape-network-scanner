@@ -50,4 +50,8 @@ var ApplicationDiscoveryList = []ApplicationDiscoveryListItem{
 		Discovery:  &KafkaDiscovery{},
 		Reqirement: string(servicediscovery.TCP),
 	},
+	{
+		Discovery:  &CassandraDiscovery{},
+		Reqirement: string(servicediscovery.TCP),
+	},
 }
