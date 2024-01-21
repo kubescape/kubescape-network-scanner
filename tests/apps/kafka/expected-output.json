@@ -7,7 +7,7 @@
         "presentationlayer": "",
         "properties": null,
         "service": "kafka",
-        "sessionlayer": "",
+        "sessionlayer": "tcp",
         "type": "tcp"
     }
 ]

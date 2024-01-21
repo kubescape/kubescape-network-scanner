@@ -7,7 +7,7 @@
         "presentationlayer": "http",
         "properties": null,
         "service": "etcd",
-        "sessionlayer": "",
+        "sessionlayer": "tcp",
         "type": "tcp"
     }
 ]

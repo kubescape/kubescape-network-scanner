@@ -7,7 +7,7 @@
         "presentationlayer": "",
         "properties": null,
         "service": "postgresql",
-        "sessionlayer": "",
+        "sessionlayer": "tcp",
         "type": "tcp"
     }
 ]
