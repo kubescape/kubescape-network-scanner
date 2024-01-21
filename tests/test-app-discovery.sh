@@ -116,16 +116,18 @@ if [ ! -z "$APP_YAML" ]; then
     # Apply app.yaml
     kubectl apply -f $APP_YAML -n $namespace || cleanupandexit $application_name "failed to apply app.yaml"
 
-    # Wait for 3 seconds to make sure that the pods are created.
-    sleep 3
-
     # Get the list of pod names in the namespace
     pod_names=$(kubectl get pods -n $namespace -o jsonpath='{.items[*].metadata.name}')
 
     # Loop through each pod and wait for it to be ready
     for pod_name in $pod_names; do
-        kubectl wait --for=condition=Ready pod/$pod_name -n $namespace --timeout=300s
+        # Check if pod is cassandra we need to wait for 1 minute for it to be ready.
+        if [[ $pod_name == *"cassandra"* ]]; then
+            sleep 120
+        fi
     done
+
+    kubectl wait --for=condition=ready pod -l app=$application_name -n $namespace
 
     # Check result
     if [ $? -ne 0 ]; then
