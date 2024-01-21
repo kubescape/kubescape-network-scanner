@@ -35,7 +35,7 @@ func (d *TcpSessionDiscovery) SessionLayerDiscover(hostAddr string, port int) (s
 }
 
 func (d *TcpSessionDiscoveryResult) Protocol() servicediscovery.SessionLayerProtocol {
-	return ""
+	return servicediscovery.NO_SESSION_LAYER
 }
 
 func (d *TcpSessionDiscoveryResult) GetIsDetected() bool {
