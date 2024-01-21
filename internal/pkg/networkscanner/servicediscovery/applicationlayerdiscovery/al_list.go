@@ -46,4 +46,8 @@ var ApplicationDiscoveryList = []ApplicationDiscoveryListItem{
 		Discovery:  &RabbitMQDiscovery{},
 		Reqirement: string(servicediscovery.TCP),
 	},
+	{
+		Discovery:  &KafkaDiscovery{},
+		Reqirement: string(servicediscovery.TCP),
+	},
 }
