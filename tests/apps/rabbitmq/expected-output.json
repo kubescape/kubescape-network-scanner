@@ -7,7 +7,7 @@
         "presentationlayer": "",
         "properties": null,
         "service": "rabbitmq",
-        "sessionlayer": "",
+        "sessionlayer": "tcp",
         "type": "tcp"
     }
 ]
