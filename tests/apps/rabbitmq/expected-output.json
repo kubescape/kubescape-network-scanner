@@ -1,7 +1,7 @@
 [
     {
         "applicationlayer": "rabbitmq",
-        "authenticated": true,
+        "authenticated": false,
         "host": "rabbitmq-service",
         "port": 5672,
         "presentationlayer": "",
