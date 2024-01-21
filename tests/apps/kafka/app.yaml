@@ -5,7 +5,6 @@ metadata:
     app: zookeeper-service
   name: zookeeper-service
 spec:
-  type: NodePort
   ports:
     - name: zookeeper-port
       port: 2181
@@ -31,7 +30,7 @@ spec:
     spec:
       containers:
         - image: wurstmeister/zookeeper
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           name: zookeeper
           ports:
             - containerPort: 2181
@@ -76,7 +75,7 @@ spec:
         - name: KAFKA_ADVERTISED_LISTENERS
           value: PLAINTEXT://kafka-service:9092
         image: wurstmeister/kafka
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         name: kafka
         ports:
           - containerPort: 9092
