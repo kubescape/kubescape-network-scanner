@@ -116,6 +116,9 @@ if [ ! -z "$APP_YAML" ]; then
     # Apply app.yaml
     kubectl apply -f $APP_YAML -n $namespace || cleanupandexit $application_name "failed to apply app.yaml"
 
+    # Wait for 3 seconds to make sure that the pods are created.
+    sleep 3
+
     # Get the list of pod names in the namespace
     pod_names=$(kubectl get pods -n $namespace -o jsonpath='{.items[*].metadata.name}')
 
