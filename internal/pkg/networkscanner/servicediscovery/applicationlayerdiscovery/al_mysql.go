@@ -46,7 +46,11 @@ func (d *MysqlDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 	// Attempt to open a connection
 	db, err := sql.Open("mysql", dataSourceName)
 	if err != nil {
-		return nil, err
+		return &MysqlDiscoveryResult{
+			IsDetected:      false,
+			isAuthenticated: true,
+			properties:      nil, // Set properties to nil as it's not used in this case
+		}, nil
 	}
 	defer db.Close()
 
