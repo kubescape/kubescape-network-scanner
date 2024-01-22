@@ -2,24 +2,30 @@ package applicationlayerdiscovery
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/binary"
+	"fmt"
+	"strings"
+
+	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
 )
 
 type MysqlDiscoveryResult struct {
-	IsDetected bool
-	properties map[string]interface{}
+	IsDetected      bool
+	isAuthenticated bool
+	properties      map[string]interface{}
 }
 
 type MysqlDiscovery struct{}
 
 func (r *MysqlDiscoveryResult) Protocol() string {
-	return "my-sql"
+	return "mysql"
 }
 
 func (r *MysqlDiscoveryResult) GetIsAuthRequired() bool {
-	return false
+	return r.isAuthenticated
 }
 
 func (r *MysqlDiscoveryResult) GetIsDetected() bool {
@@ -31,31 +37,48 @@ func (r *MysqlDiscoveryResult) GetProperties() map[string]interface{} {
 }
 
 func (d *MysqlDiscovery) Protocol() string {
-	return "my-sql"
+	return "mysql"
 }
 
 func (d *MysqlDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler, presentationLayerDiscoveryResult servicediscovery.IPresentationDiscoveryResult) (servicediscovery.IApplicationDiscoveryResult, error) {
-	err := sessionHandler.Connect()
+	dataSourceName := fmt.Sprintf("root:@tcp(%s:%d)/", sessionHandler.GetHost(), sessionHandler.GetPort())
+
+	// Attempt to open a connection
+	db, err := sql.Open("mysql", dataSourceName)
 	if err != nil {
 		return nil, err
 	}
+	defer db.Close()
 
-	// Decode initial handshake packet
-	packet := &InitialHandshakePacket{}
-	err = packet.Decode(sessionHandler)
+	// Ping the server
+	err = db.Ping()
+	isMySql := false
+	isAuthRequired := false
 	if err != nil {
-		return nil, err
+		if strings.Contains(err.Error(), "Access denied") {
+			//
+			// If access is denied, that means the server is there but requires authentication
+			isMySql = true
+			isAuthRequired = true
+		} else {
+			// Some other error means the server is not there
+			isMySql = false
+			isAuthRequired = false
+		}
+	} else {
+		// No error means the server is there and does not require authentication
+		isMySql = true
+		isAuthRequired = false
 	}
 
-	// Create MySQL discovery result
-	return &MysqlDiscoveryResult{
-		IsDetected: true,
-		properties: map[string]interface{}{
-			"ServerVersion":   packet.ServerVersion,
-			"protocolVersion": packet.ProtocolVersion,
-			"ConnectionId":    packet.ConnectionId,
-		},
-	}, nil
+	result := &MysqlDiscoveryResult{
+		IsDetected:      isMySql,
+		isAuthenticated: isAuthRequired,
+		properties:      nil, // Set properties to nil as it's not used in this case
+	}
+
+	return result, nil
+
 }
 
 // PacketHeader represents packet header
