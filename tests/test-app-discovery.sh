@@ -107,9 +107,11 @@ namespace="test-$random_name"
 # Create a namespace
 kubectl create namespace $namespace || exit 1
 
+# Verify that the namespace was created
+kubectl get namespace $namespace || exit 1
+
 # Print out the namespace and the service account
 kubectl get serviceaccount -n $namespace
-
 
 # If app.yaml exists, apply it
 if [ ! -z "$APP_YAML" ]; then
@@ -124,10 +126,6 @@ if [ ! -z "$APP_YAML" ]; then
         # Check if pod is cassandra we need to wait for 2 minute for it to be ready.
         if [[ $pod_name == *"cassandra"* ]]; then
             sleep 120
-        fi
-
-        if [[ $pod_name == *"mysql"* ]]; then
-            sleep 60
         fi
     done
 
