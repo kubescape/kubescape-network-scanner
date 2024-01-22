@@ -81,6 +81,15 @@ spec:
           timeoutSeconds: 5
           periodSeconds: 5
           initialDelaySeconds: 40
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "kafka-broker-api-versions.sh --bootstrap-server=localhost:9092"
+          timeoutSeconds: 5
+          periodSeconds: 5
+          initialDelaySeconds: 40
         imagePullPolicy: Always
         name: kafka
         ports:
