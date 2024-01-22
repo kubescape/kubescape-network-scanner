@@ -1,12 +1,12 @@
 [
     {
-        "applicationlayer": "postgresql",
+        "applicationlayer": "mysql",
         "authenticated": true,
-        "host": "postgres-service",
-        "port": 5432,
+        "host": "mysql-service",
+        "port": 3306,
         "presentationlayer": "",
         "properties": null,
-        "service": "postgresql",
+        "service": "mysql",
         "sessionlayer": "tcp",
         "type": "tcp"
     }

@@ -121,16 +121,13 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 							result.isAuthenticated = applicationDiscoveryResult.GetIsAuthRequired()
 							result.properties = applicationDiscoveryResult.GetProperties()
 							break // Stop checking application layer protocol
-						} else {
-
 						}
 					}
 
 					break // Stop checking presentation layer protocols
 				}
 			}
-
-			if presentationDiscoveryResult == nil {
+			if presentationDiscoveryResult == nil || !presentationDiscoveryResult.GetIsDetected() {
 				// Continue to discover application layer protocols
 				applicationLayerChan := make(chan applicationLayerDiscoveryResult)
 				for _, applicationDiscoveryItem := range applicationlayerdiscovery.ApplicationDiscoveryList {
@@ -160,8 +157,6 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 						result.isAuthenticated = applicationDiscoveryResult.GetIsAuthRequired()
 						result.properties = applicationDiscoveryResult.GetProperties()
 						break
-					} else {
-
 					}
 				}
 			}

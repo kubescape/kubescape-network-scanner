@@ -9,7 +9,7 @@ const (
 	UDP              TransportProtocol         = "udp"
 	TLS              SessionLayerProtocol      = "tls"
 	SSH              SessionLayerProtocol      = "ssh"
-	NO_SESSION_LAYER SessionLayerProtocol      = "no_session_layer"
+	NO_SESSION_LAYER SessionLayerProtocol      = "tcp"
 	HTTP             PresentationLayerProtocol = "http"
 )
 

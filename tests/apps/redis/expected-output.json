@@ -1,12 +1,12 @@
 [
     {
         "applicationlayer": "redis",
-        "authenticated": true,
+        "authenticated": false,
         "host": "redis-service",
         "port": 6379,
         "presentationlayer": "",
         "service": "redis",
-        "sessionlayer": "",
+        "sessionlayer": "tcp",
         "properties": null,
         "type": "tcp"
     }

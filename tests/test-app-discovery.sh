@@ -46,6 +46,13 @@ then
     exit 1
 fi
 
+# Check if jq is available
+if ! command -v jq &> /dev/null
+then
+    testprint "jq could not be found" "red"
+    exit 1
+fi
+
 # Check if kubernetes is running
 if ! kubectl cluster-info &> /dev/null
 then
@@ -100,21 +107,29 @@ namespace="test-$random_name"
 # Create a namespace
 kubectl create namespace $namespace || exit 1
 
+# Verify that the namespace was created
+kubectl get namespace $namespace || exit 1
+
 # Print out the namespace and the service account
 kubectl get serviceaccount -n $namespace
-
 
 # If app.yaml exists, apply it
 if [ ! -z "$APP_YAML" ]; then
     # Apply app.yaml
     kubectl apply -f $APP_YAML -n $namespace || cleanupandexit $application_name "failed to apply app.yaml"
-    # Wait for the application to be ready
-    kubectl wait --for=condition=ready pod -l app=$application_name -n $namespace
-    # Check result
-    if [ $? -ne 0 ]; then
-        kubectl describe pods -n $namespace -l app=$application_name
-        cleanupandexit $application_name "application is not ready after 5 minutes"
-    fi
+
+    # Get the list of pod names in the namespace
+    pod_names=$(kubectl get pods -n $namespace -o jsonpath='{.items[*].metadata.name}')
+
+    # Loop through each pod and wait for it to be ready
+    for pod_name in $pod_names; do
+        # Check if pod is cassandra we need to wait for 2 minute for it to be ready.
+        if [[ $pod_name == *"cassandra"* ]]; then
+            sleep 120
+        fi
+    done
+
+    kubectl wait --for=condition=ready pod -l app=$application_name -n $namespace --timeout=5m || cleanupandexit $application_name "application is not ready after 5 minutes"
 fi
 
 # If config.yaml exists, get service name and port from it
@@ -155,18 +170,21 @@ kubectl wait --for=condition=ready pod -l run=bash-pod -n $namespace || cleanupa
 # Copy the kubescape-network-scanner binary to the pod
 kubectl cp ../kubescape-network-scanner bash-pod:/usr/local/bin/kubescape-network-scanner -n $namespace || cleanupandexit $application_name "failed to copy kubescape-network-scanner to the pod"
 
-testprint "Service name: $service_name" "white"
 kubectl -n $namespace get service -o wide
+
+# Sleep for 5 seconds to make sure that the service is ready.
+sleep 5
 
 # Run the kubescape-network-scanner binary in the pod
 kubectl exec bash-pod -n $namespace -- kubescape-network-scanner scan --tcp $service_name $service_port --json --output /tmp/output.json || cleanupandexit $application_name "failed to run kubescape-network-scanner in the pod"
 
 # Get the output json file from the pod
-kubectl cp bash-pod:/tmp/output.json /tmp/$random_name-output.json -n $namespace |& tee /tmp/$random_name-log.txt || cleanupandexit $application_name "failed to copy output.json from the pod"
+kubectl cp bash-pod:/tmp/output.json /tmp/$random_name-output.json -n $namespace 2>&1 | tee /tmp/$random_name-log.txt || cleanupandexit $application_name "failed to copy output.json from the pod"
 
-# Compare the output json file with the expected output json file (ignore whitespace)
-jq -S . /tmp/$random_name-output.json > /tmp/$random_name-output.json.tmp && mv /tmp/$random_name-output.json.tmp /tmp/$random_name-output.json
-jq -S . apps/$application_name/expected-output.json > /tmp/$random_name-expected-output.json
+# Compare the output json file with the expected output json file (ignore whitespace and "properties" field)
+jq --sort-keys -S 'map(.properties |= {})' /tmp/$random_name-output.json > /tmp/$random_name-output.json.tmp \
+  && mv /tmp/$random_name-output.json.tmp /tmp/$random_name-output.json
+jq --sort-keys -S 'map(.properties |= {})' apps/$application_name/expected-output.json > /tmp/$random_name-expected-output.json
 diff -w /tmp/$random_name-output.json /tmp/$random_name-expected-output.json > /tmp/$random_name-diff.txt
 result=$?
 

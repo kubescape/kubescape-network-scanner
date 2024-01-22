@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/coreos/etcd/clientv3"
 	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 type EtcdDiscoveryResult struct {

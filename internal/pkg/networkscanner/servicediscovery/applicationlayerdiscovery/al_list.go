@@ -10,10 +10,6 @@ type ApplicationDiscoveryListItem struct {
 }
 
 var ApplicationDiscoveryList = []ApplicationDiscoveryListItem{
-	//{
-	//	Discovery:  &KubeletDiscovery{},
-	//	Reqirement: string(HTTP),
-	//},
 	{
 		Discovery:  &KubeApiServerDiscovery{},
 		Reqirement: string(servicediscovery.TCP),
@@ -22,10 +18,10 @@ var ApplicationDiscoveryList = []ApplicationDiscoveryListItem{
 		Discovery:  &ElasticsearchDiscovery{},
 		Reqirement: string(servicediscovery.TCP),
 	},
-	//{
-	//	Discovery:  &MysqlDiscovery{},
-	//	Reqirement: string(servicediscovery.TCP),
-	//},
+	{
+		Discovery:  &MysqlDiscovery{},
+		Reqirement: string(servicediscovery.TCP),
+	},
 	{
 		Discovery:  &PostgresDiscovery{},
 		Reqirement: string(servicediscovery.TCP),
@@ -40,6 +36,18 @@ var ApplicationDiscoveryList = []ApplicationDiscoveryListItem{
 	},
 	{
 		Discovery:  &MongoDBDiscovery{},
+		Reqirement: string(servicediscovery.TCP),
+	},
+	{
+		Discovery:  &RabbitMQDiscovery{},
+		Reqirement: string(servicediscovery.TCP),
+	},
+	{
+		Discovery:  &KafkaDiscovery{},
+		Reqirement: string(servicediscovery.TCP),
+	},
+	{
+		Discovery:  &CassandraDiscovery{},
 		Reqirement: string(servicediscovery.TCP),
 	},
 }

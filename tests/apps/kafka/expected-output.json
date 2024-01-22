@@ -1,0 +1,13 @@
+[
+    {
+        "applicationlayer": "kafka",
+        "authenticated": false,
+        "host": "kafka-service",
+        "port": 9092,
+        "presentationlayer": "",
+        "properties": null,
+        "service": "kafka",
+        "sessionlayer": "tcp",
+        "type": "tcp"
+    }
+]

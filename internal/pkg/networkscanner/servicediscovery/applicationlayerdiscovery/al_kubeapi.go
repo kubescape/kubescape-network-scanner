@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -77,7 +77,7 @@ func (d *KubeApiServerDiscovery) Discover(sessionHandler servicediscovery.ISessi
 		contentType := resp.Header.Get("Content-Type")
 		if strings.HasPrefix(contentType, "application/json") {
 			// Convert body to struct
-			body, err := ioutil.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return nil, fmt.Errorf("failed to read response body: %v", err)
 			}

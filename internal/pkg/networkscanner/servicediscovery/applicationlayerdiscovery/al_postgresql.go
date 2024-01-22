@@ -44,7 +44,11 @@ func (d *PostgresDiscovery) Discover(sessionHandler servicediscovery.ISessionHan
 	db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d user=admin password=\"123456\" sslmode=disable connect_timeout=5", sessionHandler.GetHost(), sessionHandler.GetPort()))
 	if err != nil {
 		fmt.Printf("failed to connect to PostgreSQL server: %v\n", err)
-		return nil, fmt.Errorf("failed to connect to PostgreSQL server: %v", err)
+		return &PostgresDiscoveryResult{
+			isDetected:      false,
+			isAuthenticated: true,
+			properties:      nil, // Set properties to nil as it's not used in this case
+		}, nil
 	}
 	defer db.Close()
 
