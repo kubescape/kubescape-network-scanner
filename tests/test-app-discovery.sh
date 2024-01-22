@@ -125,6 +125,10 @@ if [ ! -z "$APP_YAML" ]; then
         if [[ $pod_name == *"cassandra"* ]]; then
             sleep 120
         fi
+
+        if [[ $pod_name == *"mysql"* ]]; then
+            sleep 60
+        fi
     done
 
     kubectl wait --for=condition=ready pod -l app=$application_name -n $namespace --timeout=5m || cleanupandexit $application_name "application is not ready after 5 minutes"
