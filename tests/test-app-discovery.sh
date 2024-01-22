@@ -125,11 +125,6 @@ if [ ! -z "$APP_YAML" ]; then
         if [[ $pod_name == *"cassandra"* ]]; then
             sleep 120
         fi
-
-        # Check if pod is kafka we need to wait for 3 minute for it to be ready.
-        if [[ $pod_name == *"kafka"* ]] || [[ $pod_name == *"zookeeper"* ]]; then
-            sleep 180
-        fi
     done
 
     kubectl wait --for=condition=ready pod -l app=$application_name -n $namespace --timeout=5m || cleanupandexit $application_name "application is not ready after 5 minutes"
