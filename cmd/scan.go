@@ -90,7 +90,7 @@ func scan(cmd *cobra.Command, args []string) error {
 			fmt.Fprintf(os.Stderr, "Session Layer: %s\n", discoveryResult.SessionLayer)
 			fmt.Fprintf(os.Stderr, "Presentation Layer: %s\n", discoveryResult.PresentationLayer)
 			fmt.Fprintf(os.Stderr, "Application Layer: %s\n", discoveryResult.ApplicationLayer)
-			fmt.Fprintf(os.Stderr, "Authenticated: %v\n", discoveryResult.isAuthenticated)
+			fmt.Fprintf(os.Stderr, "Authenticated: %v\n", discoveryResult.IsAuthenticated)
 			fmt.Fprintf(os.Stderr, "Properties: %s\n", discoveryResult.properties)
 
 			// Store discovery results in a map
@@ -102,7 +102,7 @@ func scan(cmd *cobra.Command, args []string) error {
 				"presentationlayer": discoveryResult.PresentationLayer,
 				"applicationlayer":  discoveryResult.ApplicationLayer,
 				"service":           discoveryResult.ApplicationLayer,
-				"authenticated":     discoveryResult.isAuthenticated,
+				"authenticated":     discoveryResult.IsAuthenticated,
 				"properties":        discoveryResult.properties,
 			}
 
@@ -122,7 +122,7 @@ func scan(cmd *cobra.Command, args []string) error {
 			fmt.Fprintf(os.Stderr, "Session Layer: %s\n", discoveryResult.SessionLayer)
 			fmt.Fprintf(os.Stderr, "Presentation Layer: %s\n", discoveryResult.PresentationLayer)
 			fmt.Fprintf(os.Stderr, "Application Layer: %s\n", discoveryResult.ApplicationLayer)
-			fmt.Fprintf(os.Stderr, "Authenticated: %v\n", discoveryResult.isAuthenticated)
+			fmt.Fprintf(os.Stderr, "Authenticated: %v\n", discoveryResult.IsAuthenticated)
 			fmt.Fprintf(os.Stderr, "Properties: %s\n", discoveryResult.properties)
 			// Store discovery results in a map
 			resultMap := map[string]interface{}{
@@ -133,7 +133,7 @@ func scan(cmd *cobra.Command, args []string) error {
 				"presentationlayer": discoveryResult.PresentationLayer,
 				"applicationlayer":  discoveryResult.ApplicationLayer,
 				"service":           discoveryResult.ApplicationLayer,
-				"authenticated":     discoveryResult.isAuthenticated,
+				"authenticated":     discoveryResult.IsAuthenticated,
 				"properties":        discoveryResult.properties,
 			}
 
