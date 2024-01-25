@@ -43,7 +43,7 @@ func (d *EtcdDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler
 	endpoints := []string{fmt.Sprintf("%s:%d", sessionHandler.GetHost(), sessionHandler.GetPort())}
 	config := clientv3.Config{
 		Endpoints:   endpoints,
-		DialTimeout: 5 * time.Second,
+		DialTimeout: 3 * time.Second,
 	}
 
 	client, err := clientv3.New(config)

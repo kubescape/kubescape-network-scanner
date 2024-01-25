@@ -3,6 +3,7 @@ package applicationlayerdiscovery
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -42,6 +43,8 @@ func (d *MongoDBDiscovery) Protocol() string {
 
 func (d *MongoDBDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler, presentationLayerDiscoveryResult servicediscovery.IPresentationDiscoveryResult) (servicediscovery.IApplicationDiscoveryResult, error) {
 	clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%d", sessionHandler.GetHost(), sessionHandler.GetPort()))
+	connectionTimeout := 3 * time.Second
+	clientOptions.Timeout = &connectionTimeout
 	ctx := context.Background()
 	client, err := mongo.Connect(ctx, clientOptions)
 	defer client.Disconnect(ctx)
