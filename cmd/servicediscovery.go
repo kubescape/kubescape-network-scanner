@@ -15,7 +15,7 @@ type DiscoveryResult struct {
 	SessionLayer      string
 	PresentationLayer string
 	ApplicationLayer  string
-	isAuthenticated   bool
+	IsAuthenticated   bool
 	properties        map[string]interface{}
 }
 
@@ -118,7 +118,7 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 					for applicationDiscoveryResult = range applicationLayerChan {
 						if applicationDiscoveryResult.GetIsDetected() {
 							result.ApplicationLayer = fmt.Sprintf("%v", applicationDiscoveryResult.Protocol())
-							result.isAuthenticated = applicationDiscoveryResult.GetIsAuthRequired()
+							result.IsAuthenticated = applicationDiscoveryResult.GetIsAuthRequired()
 							result.properties = applicationDiscoveryResult.GetProperties()
 							break // Stop checking application layer protocol
 						}
@@ -154,7 +154,7 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 				for applicationDiscoveryResult = range applicationLayerChan {
 					if applicationDiscoveryResult.GetIsDetected() {
 						result.ApplicationLayer = fmt.Sprintf("%v", applicationDiscoveryResult.Protocol())
-						result.isAuthenticated = applicationDiscoveryResult.GetIsAuthRequired()
+						result.IsAuthenticated = applicationDiscoveryResult.GetIsAuthRequired()
 						result.properties = applicationDiscoveryResult.GetProperties()
 						break
 					}
