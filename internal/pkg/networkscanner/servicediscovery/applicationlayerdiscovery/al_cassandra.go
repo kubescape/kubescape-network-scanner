@@ -1,6 +1,8 @@
 package applicationlayerdiscovery
 
 import (
+	"time"
+
 	"github.com/gocql/gocql"
 	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
 )
@@ -52,6 +54,7 @@ func (d *CassandraDiscovery) Discover(sessionHandler servicediscovery.ISessionHa
 		Username: Username,
 		Password: Password,
 	}
+	cluster.Timeout = time.Second * 3
 
 	// Create a session
 	session, err := cluster.CreateSession()

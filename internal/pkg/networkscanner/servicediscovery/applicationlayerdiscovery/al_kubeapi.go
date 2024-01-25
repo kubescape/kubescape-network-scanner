@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
 )
@@ -49,7 +50,7 @@ func (d *KubeApiServerDiscovery) Discover(sessionHandler servicediscovery.ISessi
 	}
 
 	// Create an http.Client with the custom transport
-	client := &http.Client{Transport: tr}
+	client := &http.Client{Transport: tr, Timeout: time.Second * 3}
 
 	// Send a GET request to the Kubernetes API server
 	resp, err := client.Get(url)

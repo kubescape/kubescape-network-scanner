@@ -2,6 +2,7 @@ package applicationlayerdiscovery
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
 	"github.com/streadway/amqp"
@@ -42,7 +43,10 @@ func (d *RabbitMQDiscovery) Protocol() string {
 
 func (d *RabbitMQDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler, presentationLayerDiscoveryResult servicediscovery.IPresentationDiscoveryResult) (servicediscovery.IApplicationDiscoveryResult, error) {
 	connectionString := fmt.Sprintf("amqp://%s:%d", sessionHandler.GetHost(), sessionHandler.GetPort())
-	conn, err := amqp.Dial(connectionString)
+	config := amqp.Config{
+		Dial: amqp.DefaultDial(time.Second * 3),
+	}
+	conn, err := amqp.DialConfig(connectionString, config)
 	if err != nil {
 		return &RabbitMQDiscoveryResult{
 			isDetected:      false,
