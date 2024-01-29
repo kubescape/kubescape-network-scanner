@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
+	"github.com/kubescape/kubescape-network-scanner/pkg/networkscanner/servicediscovery"
 	"github.com/streadway/amqp"
 )
 
@@ -52,7 +52,7 @@ func (d *RabbitMQDiscovery) Discover(sessionHandler servicediscovery.ISessionHan
 			isDetected:      false,
 			isAuthenticated: true,
 			properties:      nil, // Set properties to nil as it's not used in this case
-		}, nil
+		}, err
 	}
 	defer conn.Close()
 

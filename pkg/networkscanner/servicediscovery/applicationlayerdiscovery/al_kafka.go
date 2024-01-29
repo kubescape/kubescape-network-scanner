@@ -5,7 +5,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
+	"github.com/kubescape/kubescape-network-scanner/pkg/networkscanner/servicediscovery"
 
 	"github.com/IBM/sarama"
 )
@@ -46,7 +46,8 @@ func (k *KafkaDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 	// Configure the producer
 	config := sarama.NewConfig()
 	config.Producer.RequiredAcks = sarama.WaitForAll
-	config.Producer.Retry.Max = 5
+	config.Producer.Retry.Max = 1
+	config.Producer.Timeout = 3
 	config.Producer.Return.Successes = true
 
 	// Create a new SyncProducer
@@ -56,11 +57,11 @@ func (k *KafkaDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 			isDetected:      false,
 			isAuthenticated: true,
 			properties:      nil, // Set properties to nil as it's not used in this case
-		}, nil
+		}, err
 	}
 	defer func() {
 		if err := producer.Close(); err != nil {
-			log.Debug("Failed to close Kafka producer: ", err)
+			log.Debugf("Failed to close Kafka producer: %s", err)
 		}
 	}()
 

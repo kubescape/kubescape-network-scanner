@@ -5,10 +5,12 @@ import (
 	"io"
 	"sync"
 
-	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
-	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery/applicationlayerdiscovery"
-	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery/presentationlayerdiscovery"
-	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery/sessionlayerdiscovery"
+	log "github.com/sirupsen/logrus"
+
+	"github.com/kubescape/kubescape-network-scanner/pkg/networkscanner/servicediscovery"
+	"github.com/kubescape/kubescape-network-scanner/pkg/networkscanner/servicediscovery/applicationlayerdiscovery"
+	"github.com/kubescape/kubescape-network-scanner/pkg/networkscanner/servicediscovery/presentationlayerdiscovery"
+	"github.com/kubescape/kubescape-network-scanner/pkg/networkscanner/servicediscovery/sessionlayerdiscovery"
 )
 
 type DiscoveryResult struct {
@@ -16,7 +18,7 @@ type DiscoveryResult struct {
 	PresentationLayer string
 	ApplicationLayer  string
 	IsAuthenticated   bool
-	properties        map[string]interface{}
+	Properties        map[string]interface{}
 }
 
 func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
@@ -34,7 +36,7 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 				sessionDiscoveryResult, err := sessionDiscoveryItem.Discovery.SessionLayerDiscover(host, port)
 				if err != nil {
 					if err != io.EOF {
-						fmt.Println("Error while discovering session layer protocol:", err)
+						log.Debugf("Error while discovering session layer protocol: %v", err)
 					}
 					return
 				}
@@ -57,7 +59,7 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 			sessionHandler, err := sessionDiscoveryResult.GetSessionHandler()
 			if err != nil {
 				if err != io.EOF {
-					fmt.Println("Error while discovering session layer protocol:", err)
+					log.Debugf("Error while discovering session layer protocol: %v", err)
 				}
 				continue
 			}
@@ -72,7 +74,7 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 						presentationDiscoveryResult, err := presentationDiscoveryItem.Discovery.Discover(sessionHandler)
 						if err != nil {
 							if err != io.EOF {
-								fmt.Println("Error while discovering session layer protocol:", err)
+								log.Debugf("Error while discovering presentation layer protocol: %v", err)
 							}
 							return
 						}
@@ -119,7 +121,7 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 						if applicationDiscoveryResult.GetIsDetected() {
 							result.ApplicationLayer = fmt.Sprintf("%v", applicationDiscoveryResult.Protocol())
 							result.IsAuthenticated = applicationDiscoveryResult.GetIsAuthRequired()
-							result.properties = applicationDiscoveryResult.GetProperties()
+							result.Properties = applicationDiscoveryResult.GetProperties()
 							break // Stop checking application layer protocol
 						}
 					}
@@ -155,13 +157,13 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 					if applicationDiscoveryResult.GetIsDetected() {
 						result.ApplicationLayer = fmt.Sprintf("%v", applicationDiscoveryResult.Protocol())
 						result.IsAuthenticated = applicationDiscoveryResult.GetIsAuthRequired()
-						result.properties = applicationDiscoveryResult.GetProperties()
+						result.Properties = applicationDiscoveryResult.GetProperties()
 						break
 					}
 				}
 			}
 		} else {
-			fmt.Println("No session layer protocol detected")
+			log.Debugf("No session layer protocol detected")
 		}
 	}
 

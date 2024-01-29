@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/gocql/gocql"
-	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
+	"github.com/kubescape/kubescape-network-scanner/pkg/networkscanner/servicediscovery"
 )
 
 const (
@@ -63,7 +63,7 @@ func (d *CassandraDiscovery) Discover(sessionHandler servicediscovery.ISessionHa
 			IsDetected:      false,
 			isAuthenticated: true,
 			properties:      nil, // Set properties to nil as it's not used in this case
-		}, nil
+		}, err
 	}
 	defer session.Close()
 

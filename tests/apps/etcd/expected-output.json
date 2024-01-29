@@ -1,7 +1,7 @@
 [
     {
         "applicationlayer": "etcd",
-        "authenticated": true,
+        "authenticated": false,
         "host": "etcd-service",
         "port": 2379,
         "presentationlayer": "http",

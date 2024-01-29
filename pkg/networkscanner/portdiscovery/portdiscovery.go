@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner"
+	"github.com/kubescape/kubescape-network-scanner/pkg/networkscanner"
 )
 
 type ScanConfig struct {

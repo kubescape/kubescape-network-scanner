@@ -6,9 +6,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
+	"github.com/kubescape/kubescape-network-scanner/pkg/networkscanner/servicediscovery"
 )
 
+// TODO: Fix this scanner
 type ElasticsearchDiscoveryResult struct {
 	isDetected      bool
 	properties      map[string]interface{}
@@ -45,10 +46,10 @@ func (d *ElasticsearchDiscovery) Discover(sessionHandler servicediscovery.ISessi
 		// If there is an error connecting to Elasticsearch, return a result with isDetected set to false
 		result := &ElasticsearchDiscoveryResult{
 			isDetected:      false,
-			isAuthenticated: false,
+			isAuthenticated: true,
 			properties:      nil,
 		}
-		return result, nil
+		return result, err
 	}
 	defer response.Body.Close()
 
@@ -59,29 +60,22 @@ func (d *ElasticsearchDiscovery) Discover(sessionHandler servicediscovery.ISessi
 			return nil, fmt.Errorf("failed to read response body: %v", err)
 		}
 
-		if strings.Contains(string(body), "MongoDB") {
-			// If the response contains "MongoDB," set isDetected to false and return the result
+		// If the response body contains the Elasticsearch version, return a result with isDetected set to true
+		if strings.Contains(string(body), "version") {
 			result := &ElasticsearchDiscoveryResult{
-				isDetected:      false,
-				isAuthenticated: false,
-				properties:      nil,
+				isDetected:      true,
+				isAuthenticated: false, // Set to true if authentication is required
+				properties:      make(map[string]interface{}),
 			}
+
+			// Parse the relevant data from the response body
+			result.properties["name"] = getValueFromBody(body, "name")
+			result.properties["cluster_name"] = getValueFromBody(body, "cluster_name")
+			result.properties["cluster_uuid"] = getValueFromBody(body, "cluster_uuid")
+			result.properties["version"] = getValueFromBody(body, "version.number")
+
 			return result, nil
 		}
-
-		result := &ElasticsearchDiscoveryResult{
-			isDetected:      true,
-			isAuthenticated: false, // Set to true if authentication is required
-			properties:      make(map[string]interface{}),
-		}
-
-		// Parse the relevant data from the response body
-		result.properties["name"] = getValueFromBody(body, "name")
-		result.properties["cluster_name"] = getValueFromBody(body, "cluster_name")
-		result.properties["cluster_uuid"] = getValueFromBody(body, "cluster_uuid")
-		result.properties["version"] = getValueFromBody(body, "version.number")
-
-		return result, nil
 	}
 
 	// If the response status code is not OK (200), return a result with isDetected set to false

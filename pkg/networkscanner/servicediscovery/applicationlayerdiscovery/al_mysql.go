@@ -9,7 +9,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 
-	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
+	"github.com/kubescape/kubescape-network-scanner/pkg/networkscanner/servicediscovery"
 )
 
 type MysqlDiscoveryResult struct {
@@ -57,17 +57,15 @@ func (d *MysqlDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 	// Ping the server
 	err = db.Ping()
 	isMySql := false
-	isAuthRequired := false
+	isAuthRequired := true
 	if err != nil {
 		if strings.Contains(err.Error(), "Access denied") {
-			//
 			// If access is denied, that means the server is there but requires authentication
 			isMySql = true
 			isAuthRequired = true
 		} else {
 			// Some other error means the server is not there
 			isMySql = false
-			isAuthRequired = false
 		}
 	} else {
 		// No error means the server is there and does not require authentication

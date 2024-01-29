@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/portdiscovery"
+	"github.com/kubescape/kubescape-network-scanner/pkg/networkscanner/portdiscovery"
 	"github.com/spf13/cobra"
 )
 
@@ -91,7 +91,7 @@ func scan(cmd *cobra.Command, args []string) error {
 			fmt.Fprintf(os.Stderr, "Presentation Layer: %s\n", discoveryResult.PresentationLayer)
 			fmt.Fprintf(os.Stderr, "Application Layer: %s\n", discoveryResult.ApplicationLayer)
 			fmt.Fprintf(os.Stderr, "Authenticated: %v\n", discoveryResult.IsAuthenticated)
-			fmt.Fprintf(os.Stderr, "Properties: %s\n", discoveryResult.properties)
+			fmt.Fprintf(os.Stderr, "Properties: %s\n", discoveryResult.Properties)
 
 			// Store discovery results in a map
 			resultMap := map[string]interface{}{
@@ -103,7 +103,7 @@ func scan(cmd *cobra.Command, args []string) error {
 				"applicationlayer":  discoveryResult.ApplicationLayer,
 				"service":           discoveryResult.ApplicationLayer,
 				"authenticated":     discoveryResult.IsAuthenticated,
-				"properties":        discoveryResult.properties,
+				"properties":        discoveryResult.Properties,
 			}
 
 			// Append results to discoveryResults slice
@@ -123,7 +123,7 @@ func scan(cmd *cobra.Command, args []string) error {
 			fmt.Fprintf(os.Stderr, "Presentation Layer: %s\n", discoveryResult.PresentationLayer)
 			fmt.Fprintf(os.Stderr, "Application Layer: %s\n", discoveryResult.ApplicationLayer)
 			fmt.Fprintf(os.Stderr, "Authenticated: %v\n", discoveryResult.IsAuthenticated)
-			fmt.Fprintf(os.Stderr, "Properties: %s\n", discoveryResult.properties)
+			fmt.Fprintf(os.Stderr, "Properties: %s\n", discoveryResult.Properties)
 			// Store discovery results in a map
 			resultMap := map[string]interface{}{
 				"host":              target.Host,
@@ -134,7 +134,7 @@ func scan(cmd *cobra.Command, args []string) error {
 				"applicationlayer":  discoveryResult.ApplicationLayer,
 				"service":           discoveryResult.ApplicationLayer,
 				"authenticated":     discoveryResult.IsAuthenticated,
-				"properties":        discoveryResult.properties,
+				"properties":        discoveryResult.Properties,
 			}
 
 			// Append results to discoveryResults slice
