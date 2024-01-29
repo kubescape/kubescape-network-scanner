@@ -50,9 +50,10 @@ func (d *MysqlDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 			IsDetected:      false,
 			isAuthenticated: true,
 			properties:      nil, // Set properties to nil as it's not used in this case
-		}, nil
+		}, err
 	}
 	defer db.Close()
+	db.SetMaxIdleConns(0)
 
 	// Ping the server
 	err = db.Ping()
