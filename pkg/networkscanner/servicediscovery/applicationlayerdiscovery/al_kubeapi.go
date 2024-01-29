@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
+	"github.com/kubescape/kubescape-network-scanner/pkg/networkscanner/servicediscovery"
 )
 
 type KubeApiServerDiscoveryResult struct {
@@ -55,7 +55,7 @@ func (d *KubeApiServerDiscovery) Discover(sessionHandler servicediscovery.ISessi
 	// Send a GET request to the Kubernetes API server
 	resp, err := client.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to Kubernetes API server: %v", err)
+		return nil, fmt.Errorf("failed to send request to Kubernetes API server: %v", err)
 	}
 	defer resp.Body.Close()
 
@@ -105,7 +105,7 @@ func (d *KubeApiServerDiscovery) Discover(sessionHandler servicediscovery.ISessi
 	// If the response status is neither OK (200) nor Unauthorized (401), the Kubernetes API server is not detected
 	result := &KubeApiServerDiscoveryResult{
 		isDetected:     false,
-		isAuthRequired: false,
+		isAuthRequired: true,
 		properties:     nil,
 	}
 	return result, nil

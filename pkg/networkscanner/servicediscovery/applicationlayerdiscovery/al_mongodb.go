@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
+	"github.com/kubescape/kubescape-network-scanner/pkg/networkscanner/servicediscovery"
 )
 
 type MongoDBDiscoveryResult struct {
@@ -66,7 +68,7 @@ func (d *MongoDBDiscovery) Discover(sessionHandler servicediscovery.ISessionHand
 	// Test the connection
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		fmt.Printf("failed to ping MongoDB server: %v\n", err)
+		return result, err
 	}
 
 	// Get MongoDB server version
@@ -87,14 +89,14 @@ func (d *MongoDBDiscovery) Discover(sessionHandler servicediscovery.ISessionHand
 					"host":    host,
 				}
 			} else {
-				fmt.Printf("failed to decode server status result: %v\n", err)
+				log.Debugf("failed to decode server status result: %v", err)
 			}
 			result.isAuthenticated = false
 		} else {
-			fmt.Printf("failed to decode server status result: %v\n", err)
+			log.Debugf("failed to decode server status result: %v", err)
 		}
 	} else {
-		fmt.Printf("failed to retrieve server status: %v\n", serverStatusResult.Err())
+		log.Debugf("failed to get server status: %v", serverStatusResult.Err())
 	}
 
 	return result, nil

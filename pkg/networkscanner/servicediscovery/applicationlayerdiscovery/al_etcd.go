@@ -3,10 +3,9 @@ package applicationlayerdiscovery
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
-	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
+	"github.com/kubescape/kubescape-network-scanner/pkg/networkscanner/servicediscovery"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
@@ -48,7 +47,11 @@ func (d *EtcdDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler
 
 	client, err := clientv3.New(config)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to etcd server: %v", err)
+		return &EtcdDiscoveryResult{
+			isDetected:      false,
+			isAuthenticated: true,
+			properties:      nil,
+		}, err
 	}
 	defer client.Close()
 
@@ -56,16 +59,17 @@ func (d *EtcdDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler
 	_, err = client.Get(ctx, "/")
 	cancel()
 	if err != nil {
-		if strings.Contains(err.Error(), "etcdserver: request timed out") {
-			return nil, fmt.Errorf("etcd request timed out")
-		}
-		return nil, fmt.Errorf("failed to discover etcd: %v", err)
+		return &EtcdDiscoveryResult{
+			isDetected:      true,
+			isAuthenticated: true,
+			properties:      nil,
+		}, err
 	}
 
 	result := &EtcdDiscoveryResult{
 		isDetected:      true,
-		isAuthenticated: true,
-		properties:      nil, // Set properties to nil as it's not used in this case
+		isAuthenticated: false,
+		properties:      nil,
 	}
 
 	return result, nil

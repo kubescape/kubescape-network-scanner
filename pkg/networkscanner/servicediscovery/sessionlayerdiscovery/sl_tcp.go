@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
+	"github.com/kubescape/kubescape-network-scanner/pkg/networkscanner/servicediscovery"
 )
 
 type TcpSessionDiscovery struct {

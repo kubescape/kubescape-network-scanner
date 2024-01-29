@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
+
 	_ "github.com/lib/pq"
 
-	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
+	"github.com/kubescape/kubescape-network-scanner/pkg/networkscanner/servicediscovery"
 )
 
 type PostgresDiscoveryResult struct {
@@ -43,12 +45,12 @@ func (d *PostgresDiscovery) Discover(sessionHandler servicediscovery.ISessionHan
 	// Set a timeout of 30 ms
 	db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d user=admin password=\"123456\" sslmode=disable connect_timeout=3", sessionHandler.GetHost(), sessionHandler.GetPort()))
 	if err != nil {
-		fmt.Printf("failed to connect to PostgreSQL server: %v\n", err)
+		log.Debugf("Error while connecting to postgresql: %s", err.Error())
 		return &PostgresDiscoveryResult{
 			isDetected:      false,
 			isAuthenticated: true,
 			properties:      nil, // Set properties to nil as it's not used in this case
-		}, nil
+		}, err
 	}
 	defer db.Close()
 
@@ -71,7 +73,7 @@ func (d *PostgresDiscovery) Discover(sessionHandler servicediscovery.ISessionHan
 			result.isAuthenticated = false
 		} else {
 			result.isDetected = false
-			result.isAuthenticated = false
+			result.isAuthenticated = true
 		}
 	} else {
 		result.isDetected = true

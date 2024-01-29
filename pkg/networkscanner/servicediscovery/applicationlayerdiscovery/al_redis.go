@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/kubescape/kubescape-network-scanner/internal/pkg/networkscanner/servicediscovery"
+	"github.com/kubescape/kubescape-network-scanner/pkg/networkscanner/servicediscovery"
 )
 
 type RedisDiscoveryResult struct {
@@ -38,14 +38,6 @@ func (d *RedisDiscovery) Protocol() string {
 	return "redis"
 }
 
-type RedisPingError struct {
-	Message string
-}
-
-func (e *RedisPingError) Error() string {
-	return e.Message
-}
-
 func (d *RedisDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler, presentationLayerDiscoveryResult servicediscovery.IPresentationDiscoveryResult) (servicediscovery.IApplicationDiscoveryResult, error) {
 
 	redisClient := redis.NewClient(&redis.Options{
@@ -68,7 +60,11 @@ func (d *RedisDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 	}
 
 	if pong != "PONG" {
-		return nil, &RedisPingError{Message: fmt.Sprintf("unexpected response from Redis server: %s", pong)}
+		return &RedisDiscoveryResult{
+			isDetected:      true,
+			isAuthenticated: true,
+			properties:      nil, // Set properties to nil as it's not used in this case
+		}, fmt.Errorf("unexpected response from Redis: %s", pong)
 	}
 
 	// Redis connection successful, populate properties if needed
