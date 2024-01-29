@@ -57,7 +57,7 @@ func (k *KafkaDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 			isDetected:      false,
 			isAuthenticated: true,
 			properties:      nil, // Set properties to nil as it's not used in this case
-		}, nil
+		}, err
 	}
 	defer func() {
 		if err := producer.Close(); err != nil {

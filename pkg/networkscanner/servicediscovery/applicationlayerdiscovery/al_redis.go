@@ -64,7 +64,7 @@ func (d *RedisDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 			isDetected:      true,
 			isAuthenticated: true,
 			properties:      nil, // Set properties to nil as it's not used in this case
-		}, fmt.Errorf("unexpected response from Redis: %s", pong)
+		}, nil
 	}
 
 	// Redis connection successful, populate properties if needed
