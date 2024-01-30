@@ -5,11 +5,11 @@ import (
 	"io"
 	"log"
 	"strings"
+	"time"
+
+	"database/sql"
 
 	mysqlDriver "github.com/go-sql-driver/mysql"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 
 	"github.com/kubescape/kubescape-network-scanner/pkg/networkscanner/servicediscovery"
 )
@@ -47,11 +47,23 @@ func (d *MysqlDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 	dataSourceName := fmt.Sprintf("root:@tcp(%s:%d)/?timeout=3s", sessionHandler.GetHost(), sessionHandler.GetPort())
 
 	// Attempt to open a connection
-	db, err := gorm.Open(mysql.Open(dataSourceName), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Silent),
-	})
+	db, err := sql.Open("mysql", dataSourceName)
 	if err != nil {
-		if strings.Contains(err.Error(), "Access denied for user") {
+		return &MysqlDiscoveryResult{
+			IsDetected:      false,
+			IsAuthenticated: true,
+			Properties:      nil,
+		}, err
+	}
+	db.SetConnMaxIdleTime(time.Second * 1)
+	db.SetMaxIdleConns(0)
+	db.SetConnMaxLifetime(time.Second * 3)
+	db.SetMaxOpenConns(0)
+
+	// Ping the server
+	err = db.Ping()
+	if err != nil {
+		if strings.Contains(err.Error(), "Access denied") {
 			return &MysqlDiscoveryResult{
 				IsDetected:      true,
 				IsAuthenticated: true,
@@ -64,18 +76,6 @@ func (d *MysqlDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 			Properties:      nil,
 		}, err
 	}
-	sqlDB, err := db.DB()
-	if err != nil {
-		return &MysqlDiscoveryResult{
-			IsDetected:      true,
-			IsAuthenticated: true,
-			Properties:      nil,
-		}, err
-	}
-	defer sqlDB.Close()
-	sqlDB.SetConnMaxIdleTime(1)
-	sqlDB.SetMaxIdleConns(0)
-	sqlDB.SetMaxOpenConns(1)
 
 	result := &MysqlDiscoveryResult{
 		IsDetected:      true,
