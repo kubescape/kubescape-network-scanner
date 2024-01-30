@@ -49,7 +49,21 @@ func (d *MysqlDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 	// Attempt to open a connection
 	db, err := sql.Open("mysql", dataSourceName)
 	if err != nil {
-		if strings.Contains(err.Error(), "Access denied for user") {
+		return &MysqlDiscoveryResult{
+			IsDetected:      false,
+			IsAuthenticated: true,
+			Properties:      nil,
+		}, err
+	}
+	db.SetConnMaxIdleTime(time.Second * 1)
+	db.SetMaxIdleConns(0)
+	db.SetConnMaxLifetime(time.Second * 3)
+	db.SetMaxOpenConns(0)
+
+	// Ping the server
+	err = db.Ping()
+	if err != nil {
+		if strings.Contains(err.Error(), "Access denied") {
 			return &MysqlDiscoveryResult{
 				IsDetected:      true,
 				IsAuthenticated: true,
@@ -62,10 +76,6 @@ func (d *MysqlDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 			Properties:      nil,
 		}, err
 	}
-	db.SetConnMaxIdleTime(time.Second * 1)
-	db.SetMaxIdleConns(0)
-	db.SetConnMaxLifetime(time.Second * 3)
-	db.SetMaxOpenConns(0)
 
 	result := &MysqlDiscoveryResult{
 		IsDetected:      true,
