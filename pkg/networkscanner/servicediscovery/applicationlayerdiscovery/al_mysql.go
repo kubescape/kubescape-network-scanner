@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"strings"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 
@@ -54,6 +55,8 @@ func (d *MysqlDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 	}
 	defer db.Close()
 	db.SetMaxIdleConns(0)
+	db.SetMaxOpenConns(1)
+	db.SetConnMaxLifetime(time.Second * 10)
 
 	// Ping the server
 	err = db.Ping()
