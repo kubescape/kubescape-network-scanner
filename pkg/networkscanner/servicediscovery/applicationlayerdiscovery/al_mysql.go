@@ -5,7 +5,6 @@ import (
 	"io"
 	"log"
 	"strings"
-	"time"
 
 	"database/sql"
 
@@ -55,10 +54,6 @@ func (d *MysqlDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 			Properties:      nil,
 		}, err
 	}
-	db.SetConnMaxIdleTime(time.Second * 1)
-	db.SetMaxIdleConns(0)
-	db.SetConnMaxLifetime(time.Second * 3)
-	db.SetMaxOpenConns(0)
 
 	// Ping the server
 	err = db.Ping()
