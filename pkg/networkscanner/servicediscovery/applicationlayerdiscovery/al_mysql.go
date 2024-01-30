@@ -71,13 +71,13 @@ func (d *MysqlDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 			IsDetected:      true,
 			IsAuthenticated: true,
 			Properties:      nil,
-		}, err
+		}, nil
 	}
-	defer sqlDB.Close()
 	sqlDB.SetConnMaxIdleTime(time.Second * 1)
 	sqlDB.SetMaxIdleConns(0)
 	sqlDB.SetConnMaxLifetime(time.Second * 3)
 	sqlDB.SetMaxOpenConns(0)
+	sqlDB.Close()
 
 	result := &MysqlDiscoveryResult{
 		IsDetected:      true,
