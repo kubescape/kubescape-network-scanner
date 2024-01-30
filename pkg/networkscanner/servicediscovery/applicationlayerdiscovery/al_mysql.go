@@ -40,12 +40,13 @@ func (d *MysqlDiscovery) Protocol() string {
 }
 
 func (d *MysqlDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler, presentationLayerDiscoveryResult servicediscovery.IPresentationDiscoveryResult) (servicediscovery.IApplicationDiscoveryResult, error) {
-	dataSourceName := fmt.Sprintf("root:@tcp(%s:%d)/", sessionHandler.GetHost(), sessionHandler.GetPort())
+	dataSourceName := fmt.Sprintf("root:@tcp(%s:%d)/?timeout=3s", sessionHandler.GetHost(), sessionHandler.GetPort())
 
 	// Attempt to open a connection
 	db, err := gorm.Open(mysql.Open(dataSourceName), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
-	})
+	},
+	)
 	if err != nil {
 		if strings.Contains(err.Error(), "Access denied for user") {
 			return &MysqlDiscoveryResult{
@@ -69,6 +70,9 @@ func (d *MysqlDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 		}, err
 	}
 	defer sqlDB.Close()
+	sqlDB.SetConnMaxIdleTime(1)
+	sqlDB.SetMaxIdleConns(0)
+	sqlDB.SetMaxOpenConns(1)
 
 	result := &MysqlDiscoveryResult{
 		IsDetected:      true,
