@@ -1,6 +1,6 @@
 module github.com/kubescape/kubescape-network-scanner
 
-go 1.20
+go 1.21
 
 require (
 	github.com/IBM/sarama v1.42.1
@@ -18,7 +18,7 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	gorm.io/gorm v1.25.2-0.20230530020048-26663ab9bf55
+	gorm.io/gorm v1.25.6
 )
 
 require (

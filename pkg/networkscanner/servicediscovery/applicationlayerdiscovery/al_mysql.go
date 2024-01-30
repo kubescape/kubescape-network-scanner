@@ -2,8 +2,11 @@ package applicationlayerdiscovery
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"strings"
 
+	mysqlDriver "github.com/go-sql-driver/mysql"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -40,7 +43,8 @@ func (d *MysqlDiscovery) Protocol() string {
 }
 
 func (d *MysqlDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler, presentationLayerDiscoveryResult servicediscovery.IPresentationDiscoveryResult) (servicediscovery.IApplicationDiscoveryResult, error) {
-	dataSourceName := fmt.Sprintf("root:@tcp(%s:%d)/", sessionHandler.GetHost(), sessionHandler.GetPort())
+	mysqlDriver.SetLogger(log.New(io.Discard, "", 0))
+	dataSourceName := fmt.Sprintf("root:@tcp(%s:%d)/?timeout=3s", sessionHandler.GetHost(), sessionHandler.GetPort())
 
 	// Attempt to open a connection
 	db, err := gorm.Open(mysql.Open(dataSourceName), &gorm.Config{
@@ -69,6 +73,9 @@ func (d *MysqlDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 		}, err
 	}
 	defer sqlDB.Close()
+	sqlDB.SetConnMaxIdleTime(1)
+	sqlDB.SetMaxIdleConns(0)
+	sqlDB.SetMaxOpenConns(1)
 
 	result := &MysqlDiscoveryResult{
 		IsDetected:      true,
