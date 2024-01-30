@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"strings"
+	"time"
 
 	mysqlDriver "github.com/go-sql-driver/mysql"
 	"gorm.io/driver/mysql"
@@ -73,9 +74,10 @@ func (d *MysqlDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 		}, err
 	}
 	defer sqlDB.Close()
-	sqlDB.SetConnMaxIdleTime(1)
+	sqlDB.SetConnMaxIdleTime(time.Second * 1)
 	sqlDB.SetMaxIdleConns(0)
-	sqlDB.SetMaxOpenConns(1)
+	sqlDB.SetConnMaxLifetime(time.Second * 3)
+	sqlDB.SetMaxOpenConns(0)
 
 	result := &MysqlDiscoveryResult{
 		IsDetected:      true,
