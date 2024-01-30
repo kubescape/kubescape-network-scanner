@@ -3,13 +3,11 @@ package applicationlayerdiscovery
 import (
 	"context"
 	"fmt"
-	"io"
 	"time"
 
 	"github.com/kubescape/kubescape-network-scanner/pkg/networkscanner/servicediscovery"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
-	"google.golang.org/grpc/grpclog"
 )
 
 type EtcdDiscoveryResult struct {
@@ -63,17 +61,16 @@ func (d *EtcdDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler
 		}, err
 	}
 	defer client.Close()
-	grpclog.SetLoggerV2(grpclog.NewLoggerV2(io.Discard, io.Discard, io.Discard))
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	_, err = client.Get(ctx, "/")
 	cancel()
 	if err != nil {
 		return &EtcdDiscoveryResult{
-			isDetected:      true,
+			isDetected:      false,
 			isAuthenticated: true,
 			properties:      nil,
-		}, nil
+		}, err
 	}
 
 	result := &EtcdDiscoveryResult{
