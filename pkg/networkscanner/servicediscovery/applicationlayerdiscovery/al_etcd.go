@@ -8,6 +8,7 @@ import (
 
 	"github.com/kubescape/kubescape-network-scanner/pkg/networkscanner/servicediscovery"
 	clientv3 "go.etcd.io/etcd/client/v3"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/grpclog"
 )
 
@@ -42,9 +43,15 @@ func (d *EtcdDiscovery) Protocol() string {
 
 func (d *EtcdDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler, presentationLayerDiscoveryResult servicediscovery.IPresentationDiscoveryResult) (servicediscovery.IApplicationDiscoveryResult, error) {
 	endpoints := []string{fmt.Sprintf("%s:%d", sessionHandler.GetHost(), sessionHandler.GetPort())}
+	zapLogger := zap.NewNop()
 	config := clientv3.Config{
 		Endpoints:   endpoints,
 		DialTimeout: 3 * time.Second,
+		Logger:      zapLogger,
+		LogConfig: &zap.Config{
+			Level:       zap.NewAtomicLevelAt(zap.ErrorLevel),
+			Development: false,
+		},
 	}
 
 	client, err := clientv3.New(config)
