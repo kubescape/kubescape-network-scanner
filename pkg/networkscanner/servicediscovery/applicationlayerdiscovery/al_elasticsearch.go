@@ -61,6 +61,15 @@ func (d *ElasticsearchDiscovery) Discover(sessionHandler servicediscovery.ISessi
 	}
 	defer res.Body.Close()
 
+	// Check response status
+	if res.IsError() {
+		return &ElasticsearchDiscoveryResult{
+			isDetected:      false,
+			isAuthenticated: true,
+			properties:      nil,
+		}, err
+	}
+
 	result := &ElasticsearchDiscoveryResult{
 		isDetected:      true,
 		isAuthenticated: false,
