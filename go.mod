@@ -13,8 +13,14 @@ require (
 )
 
 require (
+	github.com/elastic/elastic-transport-go/v8 v8.4.0 // indirect
+	github.com/go-logr/logr v1.3.0 // indirect
+	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
+	go.opentelemetry.io/otel v1.21.0 // indirect
+	go.opentelemetry.io/otel/metric v1.21.0 // indirect
+	go.opentelemetry.io/otel/trace v1.21.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 )
 
@@ -27,6 +33,7 @@ require (
 	github.com/eapache/go-resiliency v1.4.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20230731223053-c322873962e3 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
+	github.com/elastic/go-elasticsearch/v8 v8.12.0
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/gocql/gocql v1.6.0
 	github.com/gogo/protobuf v1.3.2 // indirect

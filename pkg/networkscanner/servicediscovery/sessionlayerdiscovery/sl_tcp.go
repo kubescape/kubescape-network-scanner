@@ -3,8 +3,13 @@ package sessionlayerdiscovery
 import (
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/kubescape/kubescape-network-scanner/pkg/networkscanner/servicediscovery"
+)
+
+const (
+	DEFAULT_TIMEOUT = 1
 )
 
 type TcpSessionDiscovery struct {
@@ -25,7 +30,7 @@ func (d *TcpSessionDiscovery) Protocol() servicediscovery.TransportProtocol {
 }
 
 func (d *TcpSessionDiscovery) SessionLayerDiscover(hostAddr string, port int) (servicediscovery.ISessionLayerDiscoveryResult, error) {
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", hostAddr, port))
+	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", hostAddr, port), time.Second*DEFAULT_TIMEOUT)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +56,7 @@ func (d *TcpSessionDiscoveryResult) GetSessionHandler() (servicediscovery.ISessi
 }
 
 func (d *TcpSessionHandler) Connect() error {
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", d.host, d.port))
+	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", d.host, d.port), time.Second*DEFAULT_TIMEOUT)
 	if err != nil {
 		return err
 	}
