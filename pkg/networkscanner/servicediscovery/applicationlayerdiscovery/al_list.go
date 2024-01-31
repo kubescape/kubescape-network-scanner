@@ -18,13 +18,13 @@ var ApplicationDiscoveryList = []ApplicationDiscoveryListItem{
 			6443,
 		},
 	},
-	// {
-	// 	Discovery:  &ElasticsearchDiscovery{},
-	// 	Reqirement: string(servicediscovery.TCP),
-	// 	CommonPorts: []int{
-	// 		9200,
-	// 	},
-	// },
+	{
+		Discovery:  &ElasticsearchDiscovery{},
+		Reqirement: string(servicediscovery.TCP),
+		CommonPorts: []int{
+			9200,
+		},
+	},
 	{
 		Discovery:  &MysqlDiscovery{},
 		Reqirement: string(servicediscovery.TCP),
