@@ -44,7 +44,7 @@ func (d *RedisDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 		Addr:        fmt.Sprintf("%s:%d", sessionHandler.GetHost(), sessionHandler.GetPort()),
 		Password:    "", // No password for now, modify as needed
 		DB:          0,  // Use default DB
-		DialTimeout: 3 * time.Second,
+		DialTimeout: 500 * time.Millisecond,
 		MaxRetries:  1,
 	})
 

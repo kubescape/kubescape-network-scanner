@@ -50,7 +50,7 @@ func (d *KubeApiServerDiscovery) Discover(sessionHandler servicediscovery.ISessi
 	}
 
 	// Create an http.Client with the custom transport
-	client := &http.Client{Transport: tr, Timeout: time.Second * 3}
+	client := &http.Client{Transport: tr, Timeout: time.Millisecond * 500}
 
 	// Send a GET request to the Kubernetes API server
 	resp, err := client.Get(url)

@@ -54,7 +54,7 @@ func (d *CassandraDiscovery) Discover(sessionHandler servicediscovery.ISessionHa
 		Username: Username,
 		Password: Password,
 	}
-	cluster.Timeout = time.Second * 3
+	cluster.Timeout = time.Millisecond * 500
 
 	// Create a session
 	session, err := cluster.CreateSession()

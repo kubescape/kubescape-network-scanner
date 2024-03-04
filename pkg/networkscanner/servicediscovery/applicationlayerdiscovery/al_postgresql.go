@@ -43,7 +43,7 @@ func (d *PostgresDiscovery) Protocol() string {
 
 func (d *PostgresDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler, presentationLayerDiscoveryResult servicediscovery.IPresentationDiscoveryResult) (servicediscovery.IApplicationDiscoveryResult, error) {
 	// Set a timeout of 30 ms
-	db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d user=postgres sslmode=disable connect_timeout=3", sessionHandler.GetHost(), sessionHandler.GetPort()))
+	db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d user=postgres sslmode=disable connect_timeout=1", sessionHandler.GetHost(), sessionHandler.GetPort()))
 	if err != nil {
 		log.Debugf("Error while connecting to postgresql: %s", err.Error())
 		return &PostgresDiscoveryResult{
