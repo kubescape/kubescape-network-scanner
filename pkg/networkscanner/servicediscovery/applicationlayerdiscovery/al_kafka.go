@@ -2,6 +2,7 @@ package applicationlayerdiscovery
 
 import (
 	"fmt"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -47,7 +48,7 @@ func (k *KafkaDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 	config := sarama.NewConfig()
 	config.Producer.RequiredAcks = sarama.WaitForAll
 	config.Producer.Retry.Max = 1
-	config.Producer.Timeout = 3
+	config.Producer.Timeout = 500 * time.Millisecond
 	config.Producer.Return.Successes = true
 
 	// Create a new SyncProducer

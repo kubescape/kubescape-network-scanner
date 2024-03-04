@@ -44,7 +44,7 @@ func (d *RabbitMQDiscovery) Protocol() string {
 func (d *RabbitMQDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler, presentationLayerDiscoveryResult servicediscovery.IPresentationDiscoveryResult) (servicediscovery.IApplicationDiscoveryResult, error) {
 	connectionString := fmt.Sprintf("amqp://%s:%d", sessionHandler.GetHost(), sessionHandler.GetPort())
 	config := amqp.Config{
-		Dial: amqp.DefaultDial(time.Second * 3),
+		Dial: amqp.DefaultDial(time.Millisecond * 500),
 	}
 	conn, err := amqp.DialConfig(connectionString, config)
 	if err != nil {

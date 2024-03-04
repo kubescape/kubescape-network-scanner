@@ -45,7 +45,7 @@ func (d *MongoDBDiscovery) Protocol() string {
 
 func (d *MongoDBDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler, presentationLayerDiscoveryResult servicediscovery.IPresentationDiscoveryResult) (servicediscovery.IApplicationDiscoveryResult, error) {
 	clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%d", sessionHandler.GetHost(), sessionHandler.GetPort()))
-	connectionTimeout := 3 * time.Second
+	connectionTimeout := 500 * time.Millisecond
 	clientOptions.Timeout = &connectionTimeout
 	ctx := context.Background()
 	client, err := mongo.Connect(ctx, clientOptions)

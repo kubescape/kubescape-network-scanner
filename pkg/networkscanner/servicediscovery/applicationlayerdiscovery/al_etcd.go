@@ -44,7 +44,7 @@ func (d *EtcdDiscovery) Discover(sessionHandler servicediscovery.ISessionHandler
 	zapLogger := zap.NewNop()
 	config := clientv3.Config{
 		Endpoints:   endpoints,
-		DialTimeout: 3 * time.Second,
+		DialTimeout: 500 * time.Millisecond,
 		Logger:      zapLogger,
 		LogConfig: &zap.Config{
 			Level:       zap.NewAtomicLevelAt(zap.ErrorLevel),
