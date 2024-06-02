@@ -1,5 +1,4 @@
-module github.com/kubescape/kubescape-network-scanner
-
+module github.com/idohuber/idos-kubescape-network-scanner
 go 1.21
 
 require (
