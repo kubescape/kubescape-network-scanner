@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -79,7 +80,7 @@ func scan(cmd *cobra.Command, args []string) error {
 	for _, target := range scanResults {
 		// Perform service discovery for open TCP ports
 		for _, port := range target.TCPPorts {
-			discoveryResult, err := ScanTargets(target.Host, port)
+			discoveryResult, err := ScanTargets(context.Background(), target.Host, port)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Error while discovering services on %s:%d: %s\n", target.Host, port, err)
 				continue
@@ -111,7 +112,7 @@ func scan(cmd *cobra.Command, args []string) error {
 		}
 		// Perform service discovery for open UDP ports
 		for _, port := range target.UDPPorts {
-			discoveryResult, err := ScanTargets(target.Host, port)
+			discoveryResult, err := ScanTargets(context.Background(), target.Host, port)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Error while discovering services on %s:%d: %s\n", target.Host, port, err)
 				continue

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"sync"
@@ -21,7 +22,7 @@ type DiscoveryResult struct {
 	Properties        map[string]interface{}
 }
 
-func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
+func ScanTargets(ctx context.Context, host string, port int) (result DiscoveryResult, err error) {
 	var sessionWg sync.WaitGroup
 	var presentationWg sync.WaitGroup
 	var applicationWg sync.WaitGroup

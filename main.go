@@ -35,7 +35,7 @@ func main() {
 
 			go func() {
 				fmt.Printf("start scanning : %s %s:%v \n", addr.name, addr.ip, addr.port)
-				result, err := cmd.ScanTargets(addr.ip, addr.port)
+				result, err := cmd.ScanTargets(context.Background(), addr.ip, addr.port)
 				if err == nil {
 					fmt.Println(addr.name, " | ", result.ApplicationLayer, " | ", result.IsAuthenticated)
 				} else {
