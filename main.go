@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
-	"net/http"
 	_ "net/http/pprof"
 	"sync"
 	"time"
@@ -19,12 +17,8 @@ type address struct {
 }
 
 func main() {
-	go func() {
-		log.Println(http.ListenAndServe(":6060", nil))
-	}()
-
-	addresses := []address{{"dashboard-metrics-scraper", "10.109.106.102", 8000}, {"kubernetes-dashboard", "10.99.75.144", 80}} //"kubernetes", "10.96.0.1", 443}, {"kube-dns", "10.96.0.10", 53}, {"kube-dns", "10.96.0.10", 9153}, {"dashboard-metrics-scraper", "10.109.106.102", 8000}, {"kubernetes-dashboard", "10.99.75.144", 80},
-	//{"kubescape", "10.110.83.73", 8080}, {"kubevuln", "10.99.107.168", 8080}, {"node-agent", "10.103.188.164", 8080}, {"operator", "10.105.88.114", 4002}, {"storage", "10.104.25.88", 443}}
+	addresses := []address{{"dashboard-metrics-scraper", "10.109.106.102", 8000}, {"kubernetes-dashboard", "10.99.75.144", 80}, {"kubernetes", "10.96.0.1", 443}, {"kube-dns", "10.96.0.10", 53}, {"kube-dns", "10.96.0.10", 9153}, {"dashboard-metrics-scraper", "10.109.106.102", 8000}, {"kubernetes-dashboard", "10.99.75.144", 80},
+		{"kubescape", "10.110.83.73", 8080}, {"kubevuln", "10.99.107.168", 8080}, {"node-agent", "10.103.188.164", 8080}, {"operator", "10.105.88.114", 4002}, {"storage", "10.104.25.88", 443}}
 
 	fmt.Println(addresses)
 
@@ -64,11 +58,5 @@ func main() {
 	}
 	wg.Wait()
 	fmt.Println("finish")
-	// for {
-	// 	time.Sleep(1 * time.Second)
-	// }
 
 }
-
-// Got Timeout - service: kubernetes-dashboard | address: 10.99.75.144:80
-// Got Timeout - service: dashboard-metrics-scraper | address: 10.109.106.102:8000
