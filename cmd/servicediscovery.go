@@ -105,6 +105,7 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 								if err != nil {
 									return
 								}
+
 								applicationLayerChan <- applicationDiscoveryResult
 							}(applicationDiscoveryItem)
 						}
@@ -125,10 +126,11 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 							break // Stop checking application layer protocol
 						}
 					}
-
 					break // Stop checking presentation layer protocols
 				}
+
 			}
+
 			if presentationDiscoveryResult == nil || !presentationDiscoveryResult.GetIsDetected() {
 				// Continue to discover application layer protocols
 				applicationLayerChan := make(chan applicationLayerDiscoveryResult)
