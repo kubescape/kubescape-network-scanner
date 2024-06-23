@@ -5,7 +5,6 @@ go 1.21
 require (
 	github.com/IBM/sarama v1.42.1
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/kubescape/kubescape-network-scanner v0.0.12
 	github.com/lib/pq v1.10.9
 	github.com/spf13/cobra v1.7.0
 	github.com/streadway/amqp v1.1.0
@@ -18,6 +17,7 @@ require (
 	github.com/go-logr/logr v1.3.0 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
+	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	go.opentelemetry.io/otel v1.21.0 // indirect
 	go.opentelemetry.io/otel/metric v1.21.0 // indirect
 	go.opentelemetry.io/otel/trace v1.21.0 // indirect
@@ -75,7 +75,3 @@ require (
 )
 
 replace github.com/coreos/bbolt => go.etcd.io/bbolt v1.3.8
-
-replace github.com/kubescape/operator => /ido_projects/operator
-
-replace github.com/kubescape/kubescape-network-scanner => /Users/idohu/go/ido_projects/idos-kubescape-network-scanner
