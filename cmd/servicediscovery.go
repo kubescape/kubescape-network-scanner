@@ -169,7 +169,6 @@ func ScanTargets(ctx context.Context, host string, port int) (result DiscoveryRe
 			log.Debugf("No session layer protocol detected")
 		}
 	}
-
 	return result, nil
 }
 
