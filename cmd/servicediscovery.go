@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"sync"
@@ -21,7 +22,7 @@ type DiscoveryResult struct {
 	Properties        map[string]interface{}
 }
 
-func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
+func ScanTargets(ctx context.Context, host string, port int) (result DiscoveryResult, err error) {
 	var sessionWg sync.WaitGroup
 	var presentationWg sync.WaitGroup
 	var applicationWg sync.WaitGroup
@@ -105,6 +106,7 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 								if err != nil {
 									return
 								}
+
 								applicationLayerChan <- applicationDiscoveryResult
 							}(applicationDiscoveryItem)
 						}
@@ -125,10 +127,11 @@ func ScanTargets(host string, port int) (result DiscoveryResult, err error) {
 							break // Stop checking application layer protocol
 						}
 					}
-
 					break // Stop checking presentation layer protocols
 				}
+
 			}
+
 			if presentationDiscoveryResult == nil || !presentationDiscoveryResult.GetIsDetected() {
 				// Continue to discover application layer protocols
 				applicationLayerChan := make(chan applicationLayerDiscoveryResult)

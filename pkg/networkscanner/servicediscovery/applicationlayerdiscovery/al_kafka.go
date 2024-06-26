@@ -47,12 +47,16 @@ func (k *KafkaDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 	// Configure the producer
 	config := sarama.NewConfig()
 	config.Producer.RequiredAcks = sarama.WaitForAll
+	// add a more strict connection timeout
+	config.Net.ReadTimeout = 10 * time.Second
+	config.Net.WriteTimeout = 10 * time.Second
 	config.Producer.Retry.Max = 1
 	config.Producer.Timeout = 500 * time.Millisecond
 	config.Producer.Return.Successes = true
 
 	// Create a new SyncProducer
 	producer, err := sarama.NewSyncProducer(brokerList, config)
+
 	if err != nil {
 		return &KafkaDiscoveryResult{
 			isDetected:      false,
@@ -60,6 +64,7 @@ func (k *KafkaDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 			properties:      nil, // Set properties to nil as it's not used in this case
 		}, err
 	}
+
 	defer func() {
 		if err := producer.Close(); err != nil {
 			log.Debugf("Failed to close Kafka producer: %s", err)

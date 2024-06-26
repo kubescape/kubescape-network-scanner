@@ -1,10 +1,12 @@
 package applicationlayerdiscovery
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
 	"strings"
+	"time"
 
 	"database/sql"
 
@@ -55,8 +57,10 @@ func (d *MysqlDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 		}, err
 	}
 
-	// Ping the server
-	err = db.Ping()
+	// Ping the server with passed context()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	err = db.PingContext(ctx)
 	if err != nil {
 		if strings.Contains(err.Error(), "Access denied") {
 			return &MysqlDiscoveryResult{
