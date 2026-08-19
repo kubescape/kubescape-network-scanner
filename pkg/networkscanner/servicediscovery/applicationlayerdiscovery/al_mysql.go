@@ -56,6 +56,7 @@ func (d *MysqlDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 			Properties:      nil,
 		}, err
 	}
+	defer db.Close()
 
 	// Ping the server with passed context()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
