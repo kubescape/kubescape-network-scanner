@@ -61,17 +61,23 @@ func (d *KubeApiServerDiscovery) Discover(sessionHandler servicediscovery.ISessi
 
 	// Check the response status code
 	if resp.StatusCode == http.StatusOK {
-		// Check if the response body contains the Kubernetes API server version
-		if resp.Header.Get("kind") == "APIVersions" {
-			// Kubernetes API server is detected and not authenticated
-			result := &KubeApiServerDiscoveryResult{
-				isDetected:     true,
-				isAuthRequired: false,
-				properties: map[string]interface{}{
-					"url": url,
-				},
+		// The Kubernetes API server reports its kind in the JSON body, not a header
+		body, err := io.ReadAll(resp.Body)
+		if err == nil {
+			var responseJSON map[string]interface{}
+			if json.Unmarshal(body, &responseJSON) == nil {
+				if kind, ok := responseJSON["kind"].(string); ok && kind == "APIVersions" {
+					// Kubernetes API server is detected and not authenticated
+					result := &KubeApiServerDiscoveryResult{
+						isDetected:     true,
+						isAuthRequired: false,
+						properties: map[string]interface{}{
+							"url": url,
+						},
+					}
+					return result, nil
+				}
 			}
-			return result, nil
 		}
 	} else if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
 		// Check if the response is in JSON format
