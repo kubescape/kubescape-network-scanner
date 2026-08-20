@@ -47,6 +47,7 @@ func (d *RedisDiscovery) Discover(sessionHandler servicediscovery.ISessionHandle
 		DialTimeout: 500 * time.Millisecond,
 		MaxRetries:  1,
 	})
+	defer redisClient.Close()
 
 	pong, err := redisClient.Ping(context.TODO()).Result()
 	if err != nil {
