@@ -199,14 +199,11 @@ func parseArgs(args []string) (*portdiscovery.ScanConfig, error) {
 		if startIP == nil || endIP == nil {
 			return nil, fmt.Errorf("Invalid IP address range.")
 		}
-		for ip := startIP; ip.String() <= endIP.String(); portdiscovery.IncIP(ip) {
-			if ip.To4() == nil {
-				fmt.Fprintf(os.Stderr, "IPv6 address not supported: %s\n", ip.String())
-				continue
-			}
-			target := portdiscovery.ScanTarget{IPStart: ip}
-			config.Targets = append(config.Targets, target)
+		targets, err := portdiscovery.RangeTargets(startIP, endIP)
+		if err != nil {
+			return nil, err
 		}
+		config.Targets = append(config.Targets, targets...)
 	} else {
 		target := portdiscovery.ScanTarget{Hostname: targetStr}
 		if ip := net.ParseIP(target.Hostname); ip != nil {
